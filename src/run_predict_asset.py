@@ -1,28 +1,20 @@
 import pandas as pd
 import numpy as np
 
-from compute_indicators_labels_lib import clean_df
-from technical_analysis_lib import TecnicalAnalysis, BUY, HOLD, SELL
+from technical_analysis_lib import BUY, HOLD, SELL
 from sklearn.preprocessing import StandardScaler
 from Pytorch_NNModel import NNModel
-from sklearn.model_selection import train_test_split
 import os
 import traceback
 import sys
 from config import RUN as run_conf
-import matplotlib.pyplot as plt
-import datetime as dt
-import matplotlib.dates as mdates
 import torch
 from torch.utils.data import DataLoader
 from CoinDataset import CustomDataset
-from technical_analysis_lib import TecnicalAnalysis
 import compute_indicators_labels_lib
 
 
-def predict_Asset(
-    RUN, filename, mdl_name="torch_model/best_model.pt", suffix=""
-):
+def predict_Asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
     """
     Predict BUY, HOLD and SELL signals on a timeseries
     """
@@ -90,4 +82,3 @@ def predict_Asset(
 
 if __name__ == "__main__":
     predict_Asset(run_conf, "NVDA.csv")
-

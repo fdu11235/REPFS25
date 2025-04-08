@@ -10,7 +10,6 @@ from Pytorch_NNModel import NNModel
 import torch
 from torch.utils.data import DataLoader
 from CoinDataset import CustomDataset
-import tensorflow as tf
 from sklearn.utils import shuffle
 import random
 import torch.nn as nn
@@ -18,7 +17,6 @@ import torch.optim as optim
 
 from config import RUN as run_conf
 from numpy.random import seed
-from tensorflow import random as tf_rand
 from imbalanced_lib import get_sampler
 
 
