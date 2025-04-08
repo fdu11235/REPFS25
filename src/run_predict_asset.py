@@ -10,7 +10,7 @@ import sys
 from config import RUN as run_conf
 import torch
 from torch.utils.data import DataLoader
-from CoinDataset import CustomDataset
+from CustomDataset import CustomDataset
 import compute_indicators_labels_lib
 
 

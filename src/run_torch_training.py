@@ -9,7 +9,7 @@ import imbalanced_lib
 from Pytorch_NNModel import NNModel
 import torch
 from torch.utils.data import DataLoader
-from CoinDataset import CustomDataset
+from CustomDataset import CustomDataset
 from sklearn.utils import shuffle
 import random
 import torch.nn as nn

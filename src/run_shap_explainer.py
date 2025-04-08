@@ -2,17 +2,12 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
 
 import compute_indicators_labels_lib
 from Pytorch_NNModel import NNModel
 import torch
-from CoinDataset import CustomDataset
-import tensorflow as tf
 from sklearn.utils import shuffle
 import random
-import torch.nn as nn
-import torch.optim as optim
 
 from config import RUN as run_conf
 from numpy.random import seed
