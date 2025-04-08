@@ -1,5 +1,5 @@
 from libs.compute_indicators_labels_lib import get_dataset
-from config import RUN as run_conf
+from config.config import RUN as run_conf
 import pandas as pd
 import matplotlib.pyplot as plt
 

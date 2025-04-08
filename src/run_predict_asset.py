@@ -7,7 +7,7 @@ from model.Pytorch_NNModel import NNModel
 import os
 import traceback
 import sys
-from config import RUN as run_conf
+from config.config import RUN as run_conf
 import torch
 from torch.utils.data import DataLoader
 from model.CustomDataset import CustomDataset

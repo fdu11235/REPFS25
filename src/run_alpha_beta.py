@@ -1,5 +1,5 @@
 import pandas as pd
-from config import RUN
+from config.config import RUN
 import matplotlib.pyplot as plt
 
 

@@ -4,7 +4,7 @@ import pandas as pd
 from libs.technical_analysis_lib import TecnicalAnalysis
 import datetime
 import random
-from config import RUN as run_conf
+from config.config import RUN as run_conf
 from multiprocessing import pool
 import numpy as np
 import glob

@@ -9,7 +9,7 @@ import torch
 from sklearn.utils import shuffle
 import random
 
-from config import RUN as run_conf
+from config.config import RUN as run_conf
 from numpy.random import seed
 from libs.imbalanced_lib import get_sampler
 import shap

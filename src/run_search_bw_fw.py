@@ -1,7 +1,7 @@
 from libs.compute_indicators_labels_lib import preprocess
 from model_train_test_lib import train_test
 from backtest_coins_lib import backtest_all_coins
-from config import RUN
+from config.config import RUN
 from copy import deepcopy
 from collections import defaultdict
 import numbers

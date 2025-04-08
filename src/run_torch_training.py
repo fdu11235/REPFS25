@@ -15,7 +15,7 @@ import random
 import torch.nn as nn
 import torch.optim as optim
 
-from config import RUN as run_conf
+from config.config import RUN as run_conf
 from numpy.random import seed
 from libs.imbalanced_lib import get_sampler
 
