@@ -1,3 +1,4 @@
+
 aiohappyeyeballs==2.4.8
 aiohttp==3.11.13
 aiosignal==1.3.2
@@ -114,7 +115,7 @@ SQLAlchemy==2.0.38
 stack-data==0.6.3
 starlette==0.46.0
 sympy==1.13.1
-TA-Lib @ file:///C:/Users/Administrator/Documents/finance/coinbase-trading/TA_Lib-0.4.28-cp311-cp311-win_amd64.whl#sha256=642543307bc0797bb247aa4a2e3fe4c1bb770a607e03f04469028ad10bf8cf6e
+TA-Lib
 tenacity==9.0.0
 threadpoolctl==3.6.0
 tiktoken==0.9.0
