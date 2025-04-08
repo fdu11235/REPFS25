@@ -1,17 +1,17 @@
 import pandas as pd
 import numpy as np
 
-from technical_analysis_lib import BUY, HOLD, SELL
+from libs.technical_analysis_lib import BUY, HOLD, SELL
 from sklearn.preprocessing import StandardScaler
-from Pytorch_NNModel import NNModel
+from model.Pytorch_NNModel import NNModel
 import os
 import traceback
 import sys
 from config import RUN as run_conf
 import torch
 from torch.utils.data import DataLoader
-from CustomDataset import CustomDataset
-import compute_indicators_labels_lib
+from model.CustomDataset import CustomDataset
+import libs.compute_indicators_labels_lib as compute_indicators_labels_lib
 
 
 def predict_Asset(RUN, filename, mdl_name="torch_model/best_model.pt"):

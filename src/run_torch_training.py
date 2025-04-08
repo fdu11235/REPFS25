@@ -4,12 +4,12 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 
-import compute_indicators_labels_lib
-import imbalanced_lib
-from Pytorch_NNModel import NNModel
+import libs.compute_indicators_labels_lib as compute_indicators_labels_lib
+import libs.imbalanced_lib as imbalanced_lib
+from model.Pytorch_NNModel import NNModel
 import torch
 from torch.utils.data import DataLoader
-from CustomDataset import CustomDataset
+from model.CustomDataset import CustomDataset
 from sklearn.utils import shuffle
 import random
 import torch.nn as nn
@@ -17,7 +17,7 @@ import torch.optim as optim
 
 from config import RUN as run_conf
 from numpy.random import seed
-from imbalanced_lib import get_sampler
+from libs.imbalanced_lib import get_sampler
 
 
 def train_test(RUN, save_to="torch_model/model_final.pt"):

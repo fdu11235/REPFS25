@@ -3,15 +3,15 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
-import compute_indicators_labels_lib
-from Pytorch_NNModel import NNModel
+import libs.compute_indicators_labels_lib as compute_indicators_labels_lib
+from model.Pytorch_NNModel import NNModel
 import torch
 from sklearn.utils import shuffle
 import random
 
 from config import RUN as run_conf
 from numpy.random import seed
-from imbalanced_lib import get_sampler
+from libs.imbalanced_lib import get_sampler
 import shap
 
 

@@ -1,7 +1,7 @@
 from operator import concat
 import os
 import pandas as pd
-from technical_analysis_lib import TecnicalAnalysis
+from libs.technical_analysis_lib import TecnicalAnalysis
 import datetime
 import random
 from config import RUN as run_conf
