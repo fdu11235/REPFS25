@@ -16,11 +16,18 @@ def clean_df(df, filename=None):
     # Define a mapping from full Yahoo column names to standard names
     # Find the prefix dynamically (e.g., "BTC.F" or "AAPL")
     asset_name = os.path.splitext(os.path.basename(filename))[0]
+    print(df)
+    print("==========================")
+    print(asset_name)
+    print("COLUMNS:", df.columns.tolist())
     for col in df.columns:
         if "Open" in col:
             prefix = col.split("Open")[0]
             break
-
+    print("==========================")   
+    if 'prefix' not in locals():
+        raise RuntimeError("Prefix was never assigned — check column names!") 
+    print(prefix)
     rename_map = {
         f"{prefix}Open": "Open",
         f"{prefix}High": "High",

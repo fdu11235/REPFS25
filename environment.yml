@@ -11,10 +11,13 @@ dependencies:
   - scipy=1.10.1
   - ta-lib
   - matplotlib
-  - numba
+  - numba=0.56.4
+  - imbalanced-learn
   - pip:
       - torch==2.1.0+cu118
       - torchvision==0.16.0+cu118
       - torchaudio==2.1.0+cu118
       - --extra-index-url https://download.pytorch.org/whl/cu118
-      - vectorbt==0.25.1
+      - vectorbt==0.27.2
+      - shap
+      - plotly==5.24.1

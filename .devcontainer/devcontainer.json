@@ -1,0 +1,18 @@
+{
+    "name": "Trading Dev",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "trading_app",
+    "workspaceFolder": "/app",
+    "remoteUser": "root",
+    "settings": {
+      "terminal.integrated.defaultProfile.linux": "bash",
+      "python.pythonPath": "/opt/conda/envs/trading-env/bin/python"
+    },
+    "extensions": [
+      "ms-python.python",
+      "ms-toolsai.jupyter",
+      "ms-azuretools.vscode-docker"
+    ],
+    "postCreateCommand": "conda init bash && source ~/.bashrc"
+  }
+  

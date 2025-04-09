@@ -1,5 +1,6 @@
 import pandas as pd
 import vectorbt as vbt
+import os
 
 # 1. Load your CSV
 df = pd.read_csv("predictions_data/NVDA.csv")
@@ -43,5 +44,17 @@ portfolio = vbt.Portfolio.from_signals(
 )
 
 # 6. Show results
+# Create output directory if it doesn't exist
+output_dir = "vectorbt_reports"
+os.makedirs(output_dir, exist_ok=True)
+
+# Save the plot
+fig = portfolio.plot()
+output_path = os.path.join(output_dir, "backtest_output.html")
+fig.write_html(output_path)
+print(f"Plot saved to {output_path}")
+
 print(portfolio.stats(settings=dict(freq="1D")))
+fig = portfolio.plot()
+fig.write_html("backt/backtest.html")
 portfolio.plot().show()

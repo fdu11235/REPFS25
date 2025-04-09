@@ -5,7 +5,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 
 import libs.compute_indicators_labels_lib as compute_indicators_labels_lib
-import libs.imbalanced_lib as imbalanced_lib
 from model.Pytorch_NNModel import NNModel
 import torch
 from torch.utils.data import DataLoader

@@ -73,6 +73,11 @@ def predict_Asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
         output_dir = "predictions_data"
         os.makedirs(output_dir, exist_ok=True)
 
+        # Save predictions to CSV
+        output_file = os.path.join(output_dir, f"{filename}")
+        data.to_csv(output_file, index=False)
+        print(f"Predictions saved to {output_file}")
+
     except Exception:
         print("Exception in user code:")
         print("-" * 60)
