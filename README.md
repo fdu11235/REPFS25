@@ -51,7 +51,7 @@ REP_2025/
 
 ```bash
 docker-compose build
-docker-compose run app
+docker-compose run trading_app
 ```
 
 Or, open the project in **VS Code**, press `F1`, then choose:
@@ -62,12 +62,33 @@ Dev Containers: Reopen in Container
 
 ---
 
-### ⚡ Example Usage
+### ⚡ Workflow
+
+Once docker container is running use following commands:
+
+**Activate conda environment inside container:**
+
+```bash
+conda activate trading-env
+```
+
+**Preprocess data:**
+
+```bash
+python src/run_preprocess_dataset.py
+```
+
 
 **Train your model:**
 
 ```bash
 python src/run_torch_training.py
+```
+
+**Predict on out-of-sample data:**
+
+```bash
+python src/run_predict_asset.py
 ```
 
 **Run backtest:**
@@ -81,6 +102,17 @@ python src/run_backtest.py
 ```bash
 python src/run_shap_explainer.py
 ```
+---
+
+## Local Development
+
+It is also possible to just develop in a local conda environment.
+Use following command to create a conda environment and to install dependencies.
+
+```bash
+conda env create -f environment.yml
+```
+
 
 ---
 
@@ -96,27 +128,6 @@ python src/run_shap_explainer.py
 | shap           | Latest         |
 | imbalanced-learn | Latest       |
 | plotly         | ≥ 5.13         |
-
----
-
-## 📈 Workflow
-
-```bash
-# Preprocess input dataset
-python src/run_preprocess_dataset.py
-
-# Train deep learning model
-python src/run_torch_training.py
-
-# Generate predictions
-python src/run_predict_asset.py
-
-# Run vectorbt backtest
-python src/run_backtest.py
-
-# Explain model with SHAP
-python src/run_shap_explainer.py
-```
 
 ---
 
