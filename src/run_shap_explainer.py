@@ -8,11 +8,13 @@ from model.Pytorch_NNModel import NNModel
 import torch
 from sklearn.utils import shuffle
 import random
+import matplotlib.pyplot as plt
 
 from config.config import RUN as run_conf
 from numpy.random import seed
 from libs.imbalanced_lib import get_sampler
 import shap
+import os
 
 
 def explain_shap(RUN, mdl_name="torch_model/best_model.pt"):
@@ -68,8 +70,7 @@ def explain_shap(RUN, mdl_name="torch_model/best_model.pt"):
         inplace=True,
     )
 
-    # Xs, y = data.iloc[:, :-1].values, data.iloc[:, -1].values
-    # First, split into train+val and test
+    # First, split into train and test
     train_set, test_set = train_test_split(
         data, test_size=0.3, random_state=RUN["seed"], stratify=labels
     )
@@ -95,12 +96,24 @@ def explain_shap(RUN, mdl_name="torch_model/best_model.pt"):
 
     # Compute SHAP values for test samples
     shap_values = explainer.shap_values(test_samples)
-    # Beeswarm plot for class 0
+    
+    # Create output directory
+    output_dir = "shap_outputs"
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Create SHAP plot
     shap.summary_plot(
-        shap_values[:, :, 0],  # class 0 SHAP values: shape (5, 68)
-        test_samples.cpu().numpy(),  # same 5x68 shape
+        shap_values[:, :, 0],
+        test_samples.cpu().numpy(),
         feature_names=train_set.columns.tolist(),
+        show=False  # prevent display
     )
+
+    # Save it
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, "shap_summary_class0.png"))
+    plt.close()
+    print("SHAP plot saved to shap_outputs/shap_summary_class0.png")
 
 
 if __name__ == "__main__":
