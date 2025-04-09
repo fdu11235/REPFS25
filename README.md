@@ -142,7 +142,7 @@ conda env create -f environment.yml
 ## 🤝 Contributions
 
 Contributions and improvements are welcome.
-Please open an issue or pull request if you'd like to propose changes or fixes.
+Please open an issue or pull request if you'd like to propose changes or fixxes.
 
 ---
 
