@@ -20,10 +20,8 @@ def predict_Asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
     """
     try:
         nr = StandardScaler()
-
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         data = compute_indicators_labels_lib.get_backtest_dataset(RUN, filename)
-        data.replace([np.inf, -np.inf], np.nan, inplace=True)
-        data = data.dropna()
         data["Date"] = pd.to_datetime(data["Date"])
         data = data[data["Date"] >= RUN["back_test_start"]]
         data = data[data["Date"] <= RUN["back_test_end"]]
@@ -57,8 +55,8 @@ def predict_Asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
 
         print(f"train set shape 1: {data.shape[1]}")
         print(f"train set columns: {data.columns}")
-        train_loader = DataLoader(CustomDataset(data), batch_size=16)
-        model = NNModel(data.shape[1] - 1, 3).to("cuda")
+        train_loader = DataLoader(CustomDataset(data, device=device), batch_size=16)
+        model = NNModel(data.shape[1] - 1, 3).to(device)
         model.load_state_dict(torch.load(mdl_name))
         labels = model.predict(train_loader)
 
@@ -86,4 +84,4 @@ def predict_Asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
 
 
 if __name__ == "__main__":
-    predict_Asset(run_conf, "NVDA.csv")
+    predict_Asset(run_conf, "BTC-USD.csv")

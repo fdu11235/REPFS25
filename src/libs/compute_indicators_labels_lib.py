@@ -1,7 +1,7 @@
 from operator import concat
 import os
 import pandas as pd
-from libs.technical_analysis_lib import TecnicalAnalysis
+from libs.technical_analysis_lib import TechnicalAnalysis
 import datetime
 import random
 from config.config import RUN as run_conf
@@ -24,9 +24,9 @@ def clean_df(df, filename=None):
         if "Open" in col:
             prefix = col.split("Open")[0]
             break
-    print("==========================")   
-    if 'prefix' not in locals():
-        raise RuntimeError("Prefix was never assigned — check column names!") 
+    print("==========================")
+    if "prefix" not in locals():
+        raise RuntimeError("Prefix was never assigned — check column names!")
     print(prefix)
     rename_map = {
         f"{prefix}Open": "Open",
@@ -93,14 +93,14 @@ def preprocess_filename(params):
     data = clean_df(data, filename)
     data.replace([np.inf, -np.inf], np.nan, inplace=True)
     data = data.dropna()
-    data = TecnicalAnalysis.compute_oscillators(data)
-    data = TecnicalAnalysis.find_patterns(data)
-    data = TecnicalAnalysis.add_timely_data(data)
+    data = TechnicalAnalysis.compute_oscillators(data)
+    data = TechnicalAnalysis.find_patterns(data)
+    data = TechnicalAnalysis.add_timely_data(data)
 
     labels = pd.DataFrame()
     for bw in range(1, RUN["b_lim_sup_window"]):
         for fw in range(1, RUN["f_lim_sup_window"]):
-            labels["lab_%d_%d" % (bw, fw)] = TecnicalAnalysis.assign_labels(
+            labels["lab_%d_%d" % (bw, fw)] = TechnicalAnalysis.assign_labels(
                 data, bw, fw, RUN["alpha"], RUN["beta"]
             )
 
@@ -167,7 +167,7 @@ def preprocess(RUN):
 
     # feature engineering on macro data
     final_df = final_df.dropna()
-    # final_df = TecnicalAnalysis.compute_macro_features(final_df)
+    # final_df = TechnicalAnalysis.compute_macro_features(final_df)
     print(final_df)
     output_to_backtest(final_df)
     output_to_asset_training(final_df)

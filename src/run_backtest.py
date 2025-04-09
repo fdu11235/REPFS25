@@ -3,7 +3,7 @@ import vectorbt as vbt
 import os
 
 # 1. Load your CSV
-df = pd.read_csv("predictions_data/NVDA.csv")
+df = pd.read_csv("predictions_data/BTC-USD.csv")
 df["Date"] = pd.to_datetime(df["Date"])
 df.set_index("Date", inplace=True)
 
@@ -56,5 +56,5 @@ print(f"Plot saved to {output_path}")
 
 print(portfolio.stats(settings=dict(freq="1D")))
 fig = portfolio.plot()
-fig.write_html("backt/backtest.html")
+fig.write_html("vectorbt_reports/backtest.html")
 portfolio.plot().show()

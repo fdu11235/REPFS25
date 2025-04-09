@@ -9,7 +9,7 @@ HOLD = 1  # 0
 SELL = 2  # 1
 
 
-class TecnicalAnalysis:
+class TechnicalAnalysis:
 
     @staticmethod
     def compute_oscillators(data):
@@ -150,7 +150,7 @@ class TecnicalAnalysis:
         x["s-1"] = x["Close"].shift(-1 * f_window)
         x["alpha"] = alpha
         x["beta"] = beta * (1 + (f_window * 0.1))
-        x["label"] = x.apply(TecnicalAnalysis.check_label, axis=1)
+        x["label"] = x.apply(TechnicalAnalysis.check_label, axis=1)
         return x["label"]
 
     @staticmethod

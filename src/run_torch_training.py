@@ -30,8 +30,6 @@ def train_test(RUN, save_to="torch_model/model_final.pt"):
     sampler = get_sampler(run_conf["balance_algo"])
     data = compute_indicators_labels_lib.get_dataset(RUN)
 
-    data.replace([np.inf, -np.inf], np.nan, inplace=True)
-    data = data.dropna()
     print("===============")
     print(data)
     print("===============")
