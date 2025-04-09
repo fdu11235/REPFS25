@@ -20,6 +20,7 @@ from libs.imbalanced_lib import get_sampler
 
 
 def train_test(RUN, save_to="torch_model/model_final.pt"):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     random.seed(RUN["seed"])
     seed(42)
 
@@ -88,15 +89,15 @@ def train_test(RUN, save_to="torch_model/model_final.pt"):
     print(f"train set shape 1: {train_set.shape[1]}")
     print(f"train set columns: {train_set.columns}")
 
-    model = NNModel(train_set.shape[1] - 1, 3).to("cuda")
+    model = NNModel(train_set.shape[1] - 1, 3).to(device)
     # Define your loss function
     criterion = nn.CrossEntropyLoss()
 
     # Define optimizer
     optimizer = optim.Adam(model.parameters(), lr=0.0001)
-    train_loader = DataLoader(CustomDataset(train_set), batch_size=32)
-    test_loader = DataLoader(CustomDataset(test_set), batch_size=32)
-    val_loader = DataLoader(CustomDataset(val_set), batch_size=32)
+    train_loader = DataLoader(CustomDataset(train_set, device=device), batch_size=32)
+    test_loader = DataLoader(CustomDataset(test_set, device=device), batch_size=32)
+    val_loader = DataLoader(CustomDataset(val_set, device=device), batch_size=32)
     model.print_num_parameters()
     model.train_model(
         train_loader,
