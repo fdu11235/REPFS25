@@ -1,10 +1,10 @@
-# 📊 REP_2025: Market Prediction with Deep Learning & VectorBT
+# 📊 REP_2025: Market Prediction with Deep Learning
 
 This project focuses on predicting financial market movements using deep learning models and advanced backtesting techniques. It uses PyTorch for modeling, vectorbt for portfolio backtesting, TA-Lib for technical indicators, and SHAP for model explainability — all inside a GPU-accelerated Docker + Conda environment.
 
 ---
 
-## 🧠 Features
+## Features
 
 - ✅ Training pipeline for market prediction 
 - ✅ Backtesting with vectorbt 
@@ -16,7 +16,7 @@ This project focuses on predicting financial market movements using deep learnin
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 REP_2025/
@@ -36,9 +36,9 @@ REP_2025/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
-### 🔧 Requirements
+### Requirements
 
 - Docker
 - Docker Compose
@@ -47,7 +47,7 @@ REP_2025/
 
 ---
 
-### 🐳 Run in a Dev Container
+### Run in a Dev Container
 
 ```bash
 docker-compose build
@@ -62,7 +62,7 @@ Dev Containers: Reopen in Container
 
 ---
 
-### ⚡ Workflow
+### Workflow
 
 Once docker container is running use following commands:
 
@@ -116,7 +116,7 @@ conda env create -f environment.yml
 
 ---
 
-## 📦 Environment
+## Environment
 
 | Package        | Version        |
 |----------------|----------------|
@@ -131,21 +131,20 @@ conda env create -f environment.yml
 
 ---
 
-## 📎 Notes
+## Notes
 
-- Market data should be located in `processed_market_data/`
 - Run settings and paths are configured via `src/config/`
 - Use the `--gpus all` flag with Docker or use the `nvidia` runtime (already handled in `docker-compose.yml`)
 
 ---
 
-## 🤝 Contributions
+## Contributions
 
 Contributions and improvements are welcome.
 Please open an issue or pull request if you'd like to propose changes or fixxes.
 
 ---
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License.
