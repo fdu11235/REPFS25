@@ -16,6 +16,37 @@ class NNModel(nn.Module):
         self.fc2 = nn.Linear(128, 64)
         self.fc3 = nn.Linear(64, 32)
         self.fc4 = nn.Linear(32, n_classes)
+        self.activation = nn.LeakyReLU(0.01)
+
+    def forward(self, x):
+        x = self.activation(self.fc1(x))
+        x = self.activation(self.fc2(x))
+        x = self.activation(self.fc3(x))
+        x = self.fc4(x)
+        return x
+
+    """
+class NNModel(nn.Module):
+    def __init__(self, in_dim, n_classes):
+        super(NNModel, self).__init__()
+        self.fc1 = nn.Linear(in_dim, 128)
+        self.fc2 = nn.Linear(128, 64)
+        self.fc3 = nn.Linear(64, 32)
+        self.fc4 = nn.Linear(32, n_classes)
+        self.activation = nn.LeakyReLU(0.01)
+
+    def forward(self, x):
+        x = self.activation(self.fc1(x))
+        x = self.activation(self.fc2(x))
+        x = self.activation(self.fc3(x))
+        x = self.fc4(x)
+        return x
+
+super(NNModel, self).__init__()
+        self.fc1 = nn.Linear(in_dim, 128)
+        self.fc2 = nn.Linear(128, 64)
+        self.fc3 = nn.Linear(64, 32)
+        self.fc4 = nn.Linear(32, n_classes)
 
         self.act1 = nn.LeakyReLU(0.01)
         self.act2 = nn.LeakyReLU(0.01)
@@ -31,24 +62,6 @@ class NNModel(nn.Module):
         x = self.act3(self.fc3(x))
         x = self.dropout(x)
         x = self.fc4(x)  # No softmax here!
-        return x
-
-    """
-    class NNModel(nn.Module):
-    def __init__(self, in_dim, n_classes):
-        super(NNModel, self).__init__()
-        self.fc1 = nn.Linear(in_dim, 128)
-        self.fc2 = nn.Linear(128, 64)
-        self.fc3 = nn.Linear(64, 32)
-        self.fc4 = nn.Linear(32, n_classes)
-        self.activation = nn.LeakyReLU(0.01)
-
-    def forward(self, x):
-        x = self.activation(self.fc1(x))
-        x = self.activation(self.fc2(x))
-        x = self.activation(self.fc3(x))
-        x = torch.softmax(self.fc4(x), dim=1)
-        return x
     """
 
     def train_model(

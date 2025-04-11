@@ -94,7 +94,7 @@ def preprocess_filename(params):
     data.replace([np.inf, -np.inf], np.nan, inplace=True)
     data = data.dropna()
     data = TechnicalAnalysis.compute_oscillators(data)
-    data = TechnicalAnalysis.find_patterns(data)
+    # data = TechnicalAnalysis.find_patterns(data)
     data = TechnicalAnalysis.add_timely_data(data)
 
     labels = pd.DataFrame()

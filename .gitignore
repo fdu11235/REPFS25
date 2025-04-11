@@ -36,3 +36,7 @@ labor_market/
 market_data/
 torch_model/
 vectorbt_reports/
+
+lightning_logs/
+shap_outputs/
+ta_lib-0.6.3-cp310-cp310-win_amd64.whl

@@ -20,6 +20,7 @@ import os
 def explain_shap(RUN, mdl_name="torch_model/best_model.pt"):
     random.seed(RUN["seed"])
     seed(42)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     if torch.cuda.is_available():
         print("GPU is available!")
@@ -85,18 +86,18 @@ def explain_shap(RUN, mdl_name="torch_model/best_model.pt"):
 
     # Select a background dataset (needed for SHAP to compute baseline expectations)
     background = train_set[:100].to_numpy()  # Convert DataFrame to NumPy array
-    background = torch.tensor(background, dtype=torch.float32).to("cuda")
+    background = torch.tensor(background, dtype=torch.float32).to(device)
 
     # Select test samples to explain
     test_samples = test_set[:5].to_numpy()
-    test_samples = torch.tensor(test_samples, dtype=torch.float32).to("cuda")
+    test_samples = torch.tensor(test_samples, dtype=torch.float32).to(device)
 
     # Create the explainer
     explainer = shap.GradientExplainer(model, background)
 
     # Compute SHAP values for test samples
     shap_values = explainer.shap_values(test_samples)
-    
+
     # Create output directory
     output_dir = "shap_outputs"
     os.makedirs(output_dir, exist_ok=True)
@@ -106,14 +107,23 @@ def explain_shap(RUN, mdl_name="torch_model/best_model.pt"):
         shap_values[:, :, 0],
         test_samples.cpu().numpy(),
         feature_names=train_set.columns.tolist(),
-        show=False  # prevent display
+        show=True,
     )
+    """¨
+    shap.force_plot(
+        explainer.expected_value[0],
+        shap_values[0][0],  # explanation for the first sample
+        test_samples.cpu().numpy()[0],
+        feature_names=train_set.columns.tolist(),
+        matplotlib=True,  # use matplotlib backend
+    )
+    """
 
-    # Save it
-    plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, "shap_summary_class0.png"))
-    plt.close()
-    print("SHAP plot saved to shap_outputs/shap_summary_class0.png")
+    shap.bar_plot(
+        shap_values[:, :, 1].mean(axis=0),
+        feature_names=train_set.columns.tolist(),
+        max_display=20,
+    )
 
 
 if __name__ == "__main__":
