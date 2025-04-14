@@ -3,9 +3,12 @@ import vectorbt as vbt
 import os
 
 
-def backtest(filename):
+def backtest(dir, filename):
+    """
+    do backtest on a backtest dataset in specified directory
+    """
     # 1. Load your CSV
-    df = pd.read_csv(f"predictions_data/{filename}")
+    df = pd.read_csv(f"{dir}/{filename}")
     df["Date"] = pd.to_datetime(df["Date"])
     df.set_index("Date", inplace=True)
 
@@ -113,4 +116,4 @@ def backtest(filename):
 
 
 if __name__ == "__main__":
-    backtest("MSFT.csv")
+    backtest("predictions_data","MSFT.csv")
