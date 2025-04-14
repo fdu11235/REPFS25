@@ -250,7 +250,7 @@ def get_backtest_dataset(RUN, filename):
     :param RUN: run configuration dictionary
     :return: pandas dataframe wit 'label' column
     """
-    filepath = f"backtest_data/{filename}"
+    filepath = f"backtest_data/{filename}.csv"
     try:
         ds = pd.read_csv(filepath)
     except FileNotFoundError:

@@ -22,7 +22,7 @@ def predict_asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
     try:
         nr = StandardScaler()
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        data = compute_indicators_labels_lib.get_backtest_dataset(RUN, filename)
+        data = compute_indicators_labels_lib.get_backtest_dataset(RUN, f"{filename}")
         data["Date"] = pd.to_datetime(data["Date"])
         data = data[data["Date"] >= RUN["back_test_start"]]
         data = data[data["Date"] <= RUN["back_test_end"]]

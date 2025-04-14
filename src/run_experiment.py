@@ -5,9 +5,9 @@ from config.config import RUN as run_conf
 
 
 def main():
-    train_test(run_conf, save_to="torch_model/model_final.pt")
-    predict_asset(run_conf, "BTC-USD.csv", mdl_name="torch_model/best_model.pt")
-    backtest("predictions_data", "BTC-USD.csv")
+    train_test(run_conf)
+    predict_asset(run_conf, "BTC-USD", mdl_name="torch_model/best_model.pt")
+    backtest(run_conf, "predictions_data", "BTC-USD")
     return
 
 
