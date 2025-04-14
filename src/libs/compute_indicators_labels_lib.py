@@ -103,7 +103,7 @@ def output_to_asset_training(final_df):
 
 def preprocess_filename(params):
     filename, RUN = params
-    print(filename)
+    #print(filename)
     if filename.split(".")[0] in RUN["off_label_set"]:
         print("SKIPPING %s" % filename)
         return
@@ -148,10 +148,11 @@ def preprocess(RUN):
     """
     jobs = pool.Pool(24)
 
-    print("Preprocessing with: %s" % RUN)
+    #print("Preprocessing with: %s" % RUN)
     filenames = os.listdir(RUN["folder"])
     args = zip(filenames, [RUN] * len(filenames))
     args = [(k, v) for k, v in args]
+    print(args)
 
     # We engineer features of market data
     data_labels = jobs.map(preprocess_filename, args)
@@ -161,10 +162,10 @@ def preprocess(RUN):
 
     concat_data = pd.concat(data_list, ignore_index=True)
     concat_data["Date"] = pd.to_datetime(concat_data["Date"])
-
     concat_labels = pd.concat(labels_list, ignore_index=True)
-    # merge features and labelsof all assets
-    market_df = pd.concat([concat_data, concat_labels], axis=1)
+
+    # After merging with labels
+    market_df = pd.concat([concat_data.reset_index(drop=True), concat_labels.reset_index(drop=True)], axis=1)
     market_df = market_df.dropna()
 
     # We add macrodata from following directories
@@ -187,7 +188,10 @@ def preprocess(RUN):
     # feature engineering on macro data
     final_df = final_df.dropna()
     final_df = TechnicalAnalysis.compute_macro_features(final_df)
-    print(final_df)
+    print("??????????????????????????????????????????????????")
+    print(final_df[final_df['Asset_name'] == "CHFUSD=X"])
+    print("???????????????????????????????????????????????????")
+
     output_to_backtest(RUN, final_df)
     output_to_predictions(RUN, final_df)
     output_to_asset_training(final_df)

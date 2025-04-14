@@ -30,7 +30,7 @@ class TechnicalAnalysis:
         data["boll"] = (data["Close"] - lower_band) / (upper_band - lower_band)
         data["ULTOSC"] = (talib.ULTOSC(data["High"], data["Low"], data["Close"])) / 100
         data["pct_change"] = data["Close"].pct_change()
-        data["zsVol"] = (data["Volume"] - data["Volume"].mean()) / data["Volume"].std()
+        #data["zsVol"] = (data["Volume"] - data["Volume"].mean()) / data["Volume"].std()
         data["PR_MA_Ratio_short"] = (
             data["Close"] - talib.SMA(data["Close"], 21)
         ) / talib.SMA(data["Close"], 21)
