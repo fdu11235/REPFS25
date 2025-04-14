@@ -17,6 +17,7 @@ import torch.optim as optim
 from config.config import RUN as run_conf
 from numpy.random import seed
 from libs.imbalanced_lib import get_sampler
+from sklearn.decomposition import PCA
 
 
 def train_test(RUN, save_to="torch_model/model_final.pt"):
@@ -34,9 +35,12 @@ def train_test(RUN, save_to="torch_model/model_final.pt"):
     print(data)
     print("===============")
     data["Date"] = pd.to_datetime(data["Date"])
+    """
     data = data[
         (data["Date"] < RUN["back_test_start"]) | (data["Date"] > RUN["back_test_end"])
     ]  # exclude backtest data from trainig/test set
+    """
+    data = data[data["Date"] < RUN["back_test_start"]]
 
     data = data[data["pct_change"] < RUN["beta"]]  # remove outliers
 
@@ -59,6 +63,20 @@ def train_test(RUN, save_to="torch_model/model_final.pt"):
     columns = data.columns
     index = data.index
     X = scaler.fit_transform(data.values)
+
+    # === Add PCA here ===
+    if "pca_components" in RUN and RUN["pca_components"] is not None:
+        pca = PCA(n_components=RUN["pca_components"])
+        X = pca.fit_transform(X)
+        print(
+            f"PCA explained variance ratio: {pca.explained_variance_ratio_.sum():.4f}"
+        )
+
+    # Update DataFrame after PCA
+    if "pca_components" in RUN and RUN["pca_components"] is not None:
+        columns = [f"PC{i+1}" for i in range(RUN["pca_components"])]
+    else:
+        columns = data.columns
 
     data = pd.DataFrame(X, columns=columns, index=index)
     data["label"] = labels

@@ -122,7 +122,23 @@ def explain_shap(RUN, mdl_name="torch_model/best_model.pt"):
     shap.bar_plot(
         shap_values[:, :, 1].mean(axis=0),
         feature_names=train_set.columns.tolist(),
-        max_display=20,
+        max_display=30,
+    )
+
+    plt.savefig(os.path.join(output_dir, "bar_plot_class1.png"), bbox_inches="tight")
+
+    shap.bar_plot(
+        shap_values[:, :, 0].mean(axis=0),
+        feature_names=train_set.columns.tolist(),
+        max_display=30,
+    )
+
+    plt.savefig(os.path.join(output_dir, "bar_plot_class0.png"), bbox_inches="tight")
+
+    shap.bar_plot(
+        shap_values[:, :, 2].mean(axis=0),
+        feature_names=train_set.columns.tolist(),
+        max_display=30,
     )
 
 

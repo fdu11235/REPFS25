@@ -82,6 +82,22 @@ class TechnicalAnalysis:
     @staticmethod
     def compute_macro_features(data):
         macro_cols = [
+            "USURTOT INDEX",
+            "IP_INDEX",
+            "GDP_CQOQ_INDEX",
+            "RSTAMOM_INDEX",
+            "FDTR_INDEX",
+            "USGG10YR_INDEX",
+            "PPI_YOY_INDEX",
+            "CONCCONF_INDEX",
+            "USGG5YR_INDEX",
+            "USGG2YR_INDEX",
+            "CPI_XYOY_INDEX",  # optional
+            "FEDL01_INDEX",  # optional
+            "NFP TCH INDEX",  # optional
+        ]
+        """
+        macro_cols = [ 
             "CPI_XYOY_INDEX",
             "CPI_YOY_INDEX",
             "PCE_CYOY_INDEX",
@@ -106,6 +122,7 @@ class TechnicalAnalysis:
             "USYC2Y10_INDEX",
             "USYC3M10_INDEX",
         ]
+        """
 
         data[macro_cols] = data[macro_cols].ffill()
         epsilon = 1e-6
@@ -140,7 +157,7 @@ class TechnicalAnalysis:
     def add_timely_data(data):
         data["DayOfWeek"] = pd.to_datetime(data["Date"]).dt.dayofweek
         data["Month"] = pd.to_datetime(data["Date"]).dt.month
-        data["Hourly"] = pd.to_datetime(data["Date"]).dt.hour / 6
+        # data["Hourly"] = pd.to_datetime(data["Date"]).dt.hour / 6
         return data
 
     @staticmethod

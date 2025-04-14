@@ -12,9 +12,10 @@ import torch
 from torch.utils.data import DataLoader
 from model.CustomDataset import CustomDataset
 import libs.compute_indicators_labels_lib as compute_indicators_labels_lib
+from sklearn.decomposition import PCA
 
 
-def predict_Asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
+def predict_asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
     """
     Predict BUY, HOLD and SELL signals on a timeseries
     """
@@ -50,6 +51,20 @@ def predict_Asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
         index = data.index
         nr.fit(data)
         X = nr.transform(data)
+        # === Add PCA here ===
+        if "pca_components" in RUN and RUN["pca_components"] is not None:
+            pca = PCA(n_components=RUN["pca_components"])
+            X = pca.fit_transform(X)
+            print(
+                f"PCA explained variance ratio: {pca.explained_variance_ratio_.sum():.4f}"
+            )
+
+        # Update DataFrame after PCA
+        if "pca_components" in RUN and RUN["pca_components"] is not None:
+            columns = [f"PC{i+1}" for i in range(RUN["pca_components"])]
+        else:
+            columns = data.columns
+
         data = pd.DataFrame(X, columns=columns, index=index)
         data["label"] = ohlc["label"]
 
@@ -84,4 +99,4 @@ def predict_Asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
 
 
 if __name__ == "__main__":
-    predict_Asset(run_conf, "BTC-USD.csv")
+    predict_asset(run_conf, "MSFT.csv")

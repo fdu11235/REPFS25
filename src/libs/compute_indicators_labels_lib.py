@@ -47,12 +47,15 @@ def clean_df(df, filename=None):
     return df
 
 
-def output_to_backtest(final_df):
+def output_to_backtest(RUN, final_df):
     # Ensure 'Date' is datetime
     final_df["Date"] = pd.to_datetime(final_df["Date"])
 
-    # Filter rows after May 2024
-    filtered_df = final_df[final_df["Date"] > "2024-05-31"]
+    # Filter rows for back testing
+    filtered_df = final_df[
+        (final_df["Date"] > RUN["back_test_start"])
+        & (final_df["Date"] < RUN["back_test_end"])
+    ]
 
     # Create an output folder (optional)
     output_dir = "backtest_data"
@@ -167,9 +170,9 @@ def preprocess(RUN):
 
     # feature engineering on macro data
     final_df = final_df.dropna()
-    # final_df = TechnicalAnalysis.compute_macro_features(final_df)
+    final_df = TechnicalAnalysis.compute_macro_features(final_df)
     print(final_df)
-    output_to_backtest(final_df)
+    output_to_backtest(RUN, final_df)
     output_to_asset_training(final_df)
     final_df.to_csv(
         "processed_market_data/%straining_data.csv" % RUN["folder"].replace("/", "_"),
@@ -187,6 +190,8 @@ def get_dataset(RUN):
     ds = pd.read_csv(
         "processed_market_data/%straining_data.csv" % RUN["folder"].replace("/", "_")
     )
+    ds.replace([np.inf, -np.inf], np.nan, inplace=True)
+    ds = ds.dropna()
 
     # remove off label data
     for coin in RUN["off_label_set"]:
@@ -213,7 +218,7 @@ def get_dataset(RUN):
 
 def get_asset_dataset(RUN, file):
     """
-    returns a dataset labeled with given forward and backward window
+    returns a asset datasets labeled with given forward and backward window
     :param RUN: run configuration dictionary
     :return: pandas dataframe wit 'label' column
     """
@@ -241,7 +246,7 @@ def get_asset_dataset(RUN, file):
 
 def get_backtest_dataset(RUN, filename):
     """
-    returns a dataset labeled with given forward and backward window
+    returns the backtesting dataset labeled with given forward and backward window
     :param RUN: run configuration dictionary
     :return: pandas dataframe wit 'label' column
     """
