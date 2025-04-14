@@ -20,7 +20,7 @@ run1 = {
     "off_label_set": [],  # ['BTCUSDT', 'ETHUSDT', 'ALGOUSDT']  # list of coin to be excluded from training/test set. Used in backtesting
     "balance_algo": "srs",  # 'ncr', 'srs', None
     "loss_func": None,  # 'focal', 'categorical'
-    "epochs": 300,  # how many epochs spent in training neural network
+    "epochs": 100,  # how many epochs spent in training neural network
     "pca_components": None,  # Set to None to disable PCA
 }
 

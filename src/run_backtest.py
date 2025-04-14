@@ -12,7 +12,7 @@ def backtest(RUN, dir, filename):
     df = pd.read_csv(f"{dir}/{filename}.csv")
     df["Date"] = pd.to_datetime(df["Date"])
     df.set_index("Date", inplace=True)
-
+    print(df)
     # 2. Extract price and label columns
     price = df["Close"]
     labels = df["label"]
@@ -43,7 +43,6 @@ def backtest(RUN, dir, filename):
     # 4. Convert to Series
     entries = pd.Series(entries, index=labels.index)
     exits = pd.Series(exits, index=labels.index)
-
     # 5. Run backtest
     portfolio = vbt.Portfolio.from_signals(
         close=price,
@@ -53,42 +52,34 @@ def backtest(RUN, dir, filename):
         fees=0.001,
         sl_stop=0.05,  # 5% stop-loss
         tp_stop=0.20,  # 10% take-profit
+        freq="1D",
     )
-
-    # 6. Show results
     # Create output directory if it doesn't exist
     output_dir = "vectorbt_reports"
     os.makedirs(output_dir, exist_ok=True)
 
-    # Save the plot
-    fig = portfolio.plot()
-    output_path = os.path.join(output_dir, "backtest_output.html")
-    fig.write_html(output_path)
-    print(f"Plot saved to {output_path}")
+    # portfolio.plot().show()
 
-    print(portfolio.stats(settings=dict(freq="1D")))
-    portfolio.plot().show()
-
-    ########################################################################################
-
-    # 5. Create unique output directory based on date range
+    # Create unique output directory based on date range
     start_date = RUN["back_test_start"].strftime("%Y-%m-%d")
     end_date = RUN["back_test_end"].strftime("%Y-%m-%d")
     base_name = f"{filename}"
     output_dir = os.path.join("vectorbt_reports", base_name)
     os.makedirs(output_dir, exist_ok=True)
 
-    # 6. Save backtest plot
+    # Save backtest plot
     fig = portfolio.plot()
     plot_name = f"{filename}_{start_date}_to_{end_date}"
     fig.write_html(os.path.join(output_dir, f"{plot_name}.html"))
+    print(f"Plot saved to {plot_name}.html")
 
-    # 7. Save stats
-    stats = portfolio.stats(settings=dict(freq="1D"))
+    # Save stats
+    stats = portfolio.stats()
     stats = pd.DataFrame([stats])
-    stats.to_csv(os.path.join(output_dir, "backtest_stats.csv"), index=False)
+    stats["asset"] = filename
+    # stats.to_csv(os.path.join(output_dir, "backtest_stats.csv"), index=False)
 
-    # 8. Append to master CSV
+    # Append to master CSV
     master_path = "vectorbt_reports/master_backtest_stats.csv"
 
     # Append or create master file
@@ -105,4 +96,4 @@ def backtest(RUN, dir, filename):
 
 
 if __name__ == "__main__":
-    backtest(run_conf, "predictions_data", "MSFT")
+    backtest(run_conf, "backtest_data", "MSFT")

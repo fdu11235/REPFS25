@@ -22,7 +22,7 @@ def predict_asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
     try:
         nr = StandardScaler()
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        data = compute_indicators_labels_lib.get_backtest_dataset(RUN, f"{filename}")
+        data = compute_indicators_labels_lib.get_predictions_dataset(RUN, f"{filename}")
         data["Date"] = pd.to_datetime(data["Date"])
         data = data[data["Date"] >= RUN["back_test_start"]]
         data = data[data["Date"] <= RUN["back_test_end"]]
@@ -83,11 +83,11 @@ def predict_asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
         data["Date"] = ohlc["Date"]
 
         # Create an output folder of the predictions
-        output_dir = "predictions_data"
+        output_dir = "backtest_data"
         os.makedirs(output_dir, exist_ok=True)
 
         # Save predictions to CSV
-        output_file = os.path.join(output_dir, f"{filename}")
+        output_file = os.path.join(output_dir, f"{filename}.csv")
         data.to_csv(output_file, index=False)
         print(f"Predictions saved to {output_file}")
 
@@ -99,4 +99,4 @@ def predict_asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
 
 
 if __name__ == "__main__":
-    predict_asset(run_conf, "MSFT.csv")
+    predict_asset(run_conf, "MSFT")

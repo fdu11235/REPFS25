@@ -30,10 +30,6 @@ def train_test(RUN, save_to="torch_model/model_final.pt"):
     scaler = StandardScaler()
     sampler = get_sampler(run_conf["balance_algo"])
     data = compute_indicators_labels_lib.get_dataset(RUN)
-
-    print("===============")
-    print(data)
-    print("===============")
     data["Date"] = pd.to_datetime(data["Date"])
     """
     data = data[
@@ -84,7 +80,6 @@ def train_test(RUN, save_to="torch_model/model_final.pt"):
     data = shuffle(data, random_state=RUN["seed"])
     data = sampler(data)
     labels = data["label"]
-    print(data)
     print(f"Label value counts: {labels.value_counts()}")
     # Xs, y = data.iloc[:, :-1].values, data.iloc[:, -1].values
     # First, split into train+val and test

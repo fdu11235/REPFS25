@@ -69,6 +69,22 @@ def output_to_backtest(RUN, final_df):
         print(f"Saved: {filename}")
 
 
+def output_to_predictions(RUN, final_df):
+    # Ensure 'Date' is datetime
+    final_df["Date"] = pd.to_datetime(final_df["Date"])
+
+    # Create an output folder (optional)
+    output_dir = "predictions_data"
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Split by Asset_name and save to CSV
+    for asset in final_df["Asset_name"].dropna().unique():
+        asset_df = final_df[final_df["Asset_name"] == asset]
+        filename = f"{asset.replace(' ', '_').replace('/', '-')}.csv"
+        asset_df.to_csv(os.path.join(output_dir, filename), index=False)
+        print(f"Saved: {filename}")
+
+
 def output_to_asset_training(final_df):
     # Ensure 'Date' is datetime
     final_df["Date"] = pd.to_datetime(final_df["Date"])
@@ -173,6 +189,7 @@ def preprocess(RUN):
     final_df = TechnicalAnalysis.compute_macro_features(final_df)
     print(final_df)
     output_to_backtest(RUN, final_df)
+    output_to_predictions(RUN, final_df)
     output_to_asset_training(final_df)
     final_df.to_csv(
         "processed_market_data/%straining_data.csv" % RUN["folder"].replace("/", "_"),
@@ -256,9 +273,36 @@ def get_backtest_dataset(RUN, filename):
     except FileNotFoundError:
         raise FileNotFoundError(f"File not found: {filepath}")
 
-    # remove off label data
-    for coin in RUN["off_label_set"]:
-        ds = ds[ds["Asset_name"] != coin]
+    fw = RUN["f_window"]
+    bw = RUN["b_window"]
+    label_col = "lab_%d_%d" % (bw, fw)
+
+    labels = ds[label_col].copy()
+
+    droped_lab = []
+    for bw in range(1, RUN["b_lim_sup_window"]):
+        for fw in range(1, RUN["f_lim_sup_window"]):
+            label_col = "lab_%d_%d" % (bw, fw)
+            droped_lab.append(label_col)
+
+    ds = ds.drop(columns=droped_lab)
+
+    ds["label"] = labels
+
+    return ds
+
+
+def get_predictions_dataset(RUN, filename):
+    """
+    returns the backtesting dataset labeled with given forward and backward window
+    :param RUN: run configuration dictionary
+    :return: pandas dataframe wit 'label' column
+    """
+    filepath = f"predictions_data/{filename}.csv"
+    try:
+        ds = pd.read_csv(filepath)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File not found: {filepath}")
 
     fw = RUN["f_window"]
     bw = RUN["b_window"]
