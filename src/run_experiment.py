@@ -7,7 +7,19 @@ from config.config import RUN as run_conf_base
 import os
 
 
-def main():
+def fixed_backtest():
+    data_dir = "market_data/"  # change this to your actual path if needed
+    asset_files = [f for f in os.listdir(data_dir) if f.endswith(".csv")]
+    assets = [f.replace(".csv", "") for f in asset_files]
+
+    train_test(run_conf_base)
+
+    for asset in assets:
+        predict_asset(run_conf_base, asset, mdl_name="torch_model/best_model.pt")
+        backtest(run_conf_base, "backtest_data", asset)
+
+
+def growing_window_backtest():
     data_dir = "market_data/"  # change this to your actual path if needed
     asset_files = [f for f in os.listdir(data_dir) if f.endswith(".csv")]
     assets = [f.replace(".csv", "") for f in asset_files]
@@ -39,4 +51,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    fixed_backtest()
+    # growing_window_backtest()

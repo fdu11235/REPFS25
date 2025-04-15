@@ -14,7 +14,7 @@ run1 = {
     "b_lim_sup_window": 6,
     "f_lim_sup_window": 6,
     "back_test_start": Timestamp("2024-06-01"),
-    "back_test_end": Timestamp("2024-07-01"),
+    "back_test_end": Timestamp("2025-04-01"),
     "suffix": "ncr",
     "stop_loss": 0.2,
     "off_label_set": [],  # ['BTCUSDT', 'ETHUSDT', 'ALGOUSDT']  # list of coin to be excluded from training/test set. Used in backtesting

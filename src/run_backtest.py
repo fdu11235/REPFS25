@@ -2,6 +2,7 @@ import pandas as pd
 import vectorbt as vbt
 import os
 from config.config import RUN as run_conf
+from libs.compute_indicators_labels_lib import get_backtest_dataset
 
 
 def backtest(RUN, dir, filename):
@@ -10,6 +11,7 @@ def backtest(RUN, dir, filename):
     """
     # 1. Load your CSV
     df = pd.read_csv(f"{dir}/{filename}.csv")
+    # df = get_backtest_dataset(RUN, filename)
     df["Date"] = pd.to_datetime(df["Date"])
     df.set_index("Date", inplace=True)
     print(df)
@@ -80,7 +82,7 @@ def backtest(RUN, dir, filename):
     # stats.to_csv(os.path.join(output_dir, "backtest_stats.csv"), index=False)
 
     # Append to master CSV
-    master_path = "vectorbt_reports/master_backtest_stats.csv"
+    master_path = "vectorbt_reports/fixed_master_backtest_stats.csv"
 
     # Append or create master file
     if os.path.exists(master_path):
@@ -96,4 +98,4 @@ def backtest(RUN, dir, filename):
 
 
 if __name__ == "__main__":
-    backtest(run_conf, "backtest_data", "MSFT")
+    backtest(run_conf, "backtest_data", "BTC-USD")

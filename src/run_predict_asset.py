@@ -72,6 +72,7 @@ def predict_asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
         print(f"train set columns: {data.columns}")
         train_loader = DataLoader(CustomDataset(data, device=device), batch_size=16)
         model = NNModel(data.shape[1] - 1, 3).to(device)
+        model.eval()
         model.load_state_dict(torch.load(mdl_name))
         labels = model.predict(train_loader)
 
@@ -85,7 +86,7 @@ def predict_asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
         # Create an output folder of the predictions
         output_dir = "backtest_data"
         os.makedirs(output_dir, exist_ok=True)
-
+        print(data)
         # Save predictions to CSV
         output_file = os.path.join(output_dir, f"{filename}.csv")
         data.to_csv(output_file, index=False)
@@ -99,4 +100,4 @@ def predict_asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
 
 
 if __name__ == "__main__":
-    predict_asset(run_conf, "MSFT")
+    predict_asset(run_conf, "BTC-USD")
