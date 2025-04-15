@@ -5,13 +5,18 @@ from config.config import RUN as run_conf
 from libs.compute_indicators_labels_lib import get_backtest_dataset
 
 
-def backtest(RUN, dir, filename):
+def backtest(
+    RUN,
+    read_dir,
+    filename,
+    master_path="vectorbt_reports/fixed_master_backtest_stats.csv",
+    plot_dir_root="vectorbt_reports/expanding_plots",
+):
     """
     do backtest on a backtest dataset in specified directory
     """
-    # 1. Load your CSV
-    df = pd.read_csv(f"{dir}/{filename}.csv")
-    # df = get_backtest_dataset(RUN, filename)
+    # Load CSV
+    df = pd.read_csv(f"{read_dir}/{filename}.csv")
     df["Date"] = pd.to_datetime(df["Date"])
     df.set_index("Date", inplace=True)
     print(df)
@@ -62,27 +67,23 @@ def backtest(RUN, dir, filename):
 
     # portfolio.plot().show()
 
-    # Create unique output directory based on date range
+    # Set up date-based plot directory
     start_date = RUN["back_test_start"].strftime("%Y-%m-%d")
     end_date = RUN["back_test_end"].strftime("%Y-%m-%d")
-    base_name = f"{filename}"
-    output_dir = os.path.join("vectorbt_reports", base_name)
-    os.makedirs(output_dir, exist_ok=True)
+    plot_dir = os.path.join(plot_dir_root, filename)
+    os.makedirs(plot_dir, exist_ok=True)
 
-    # Save backtest plot
+    # Save plot
     fig = portfolio.plot()
-    plot_name = f"{filename}_{start_date}_to_{end_date}"
-    fig.write_html(os.path.join(output_dir, f"{plot_name}.html"))
-    print(f"Plot saved to {plot_name}.html")
+    plot_name = f"{filename}_{start_date}_to_{end_date}.html"
+    fig.write_html(os.path.join(plot_dir, plot_name))
+    print(f"Plot saved to {os.path.join(plot_dir, plot_name)}")
 
     # Save stats
     stats = portfolio.stats()
     stats = pd.DataFrame([stats])
     stats["asset"] = filename
     # stats.to_csv(os.path.join(output_dir, "backtest_stats.csv"), index=False)
-
-    # Append to master CSV
-    master_path = "vectorbt_reports/fixed_master_backtest_stats.csv"
 
     # Append or create master file
     if os.path.exists(master_path):

@@ -17,7 +17,7 @@ class TechnicalAnalysis:
         data["Z_score"] = (
             log_return - log_return.rolling(20).mean()
         ) / log_return.rolling(20).std()
-        #data["RSI"] = (talib.RSI(data["Close"])) / 100
+        # data["RSI"] = (talib.RSI(data["Close"])) / 100
         upper_band, _, lower_band = talib.BBANDS(
             data["Close"], nbdevup=2, nbdevdn=2, matype=0
         )
@@ -30,7 +30,7 @@ class TechnicalAnalysis:
         data["boll"] = (data["Close"] - lower_band) / (upper_band - lower_band)
         data["ULTOSC"] = (talib.ULTOSC(data["High"], data["Low"], data["Close"])) / 100
         data["pct_change"] = data["Close"].pct_change()
-        #data["zsVol"] = (data["Volume"] - data["Volume"].mean()) / data["Volume"].std()
+        # data["zsVol"] = (data["Volume"] - data["Volume"].mean()) / data["Volume"].std()
         data["PR_MA_Ratio_short"] = (
             data["Close"] - talib.SMA(data["Close"], 21)
         ) / talib.SMA(data["Close"], 21)

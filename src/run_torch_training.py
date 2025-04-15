@@ -1,8 +1,8 @@
 import pandas as pd
-import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
+import os
 
 import libs.compute_indicators_labels_lib as compute_indicators_labels_lib
 from model.Pytorch_NNModel import NNModel
@@ -39,7 +39,9 @@ def train_test(RUN, save_to="torch_model/model_final.pt"):
     data = data[data["Date"] < RUN["back_test_start"]]
 
     data = data[data["pct_change"] < RUN["beta"]]  # remove outliers
-
+    print("???????????????????????????????????????????????????????????")
+    print(data)
+    print("???????????????????????????????????????????????????????????")
     labels = data["label"].copy()
     labels = labels.astype(int)
 
@@ -106,9 +108,9 @@ def train_test(RUN, save_to="torch_model/model_final.pt"):
 
     # Define optimizer
     optimizer = optim.Adam(model.parameters(), lr=0.0001)
-    train_loader = DataLoader(CustomDataset(train_set, device=device), batch_size=32)
-    test_loader = DataLoader(CustomDataset(test_set, device=device), batch_size=32)
-    val_loader = DataLoader(CustomDataset(val_set, device=device), batch_size=32)
+    train_loader = DataLoader(CustomDataset(train_set, device=device), batch_size=64)
+    test_loader = DataLoader(CustomDataset(test_set, device=device), batch_size=64)
+    val_loader = DataLoader(CustomDataset(val_set, device=device), batch_size=64)
     model.print_num_parameters()
     model.train_model(
         train_loader,
@@ -118,7 +120,8 @@ def train_test(RUN, save_to="torch_model/model_final.pt"):
         int(RUN["epochs"]),
         "torch_model",
     )
-    model.save("torch_model")
+    os.makedirs(os.path.dirname(save_to), exist_ok=True)
+    model.save(save_to)
 
     preds_test = model.predict(test_loader)
     preds_train = model.predict(train_loader)
