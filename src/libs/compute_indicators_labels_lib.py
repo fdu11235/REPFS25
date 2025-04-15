@@ -191,7 +191,7 @@ def preprocess(RUN):
     # feature engineering on macro data
     final_df = final_df.dropna()
     final_df = TechnicalAnalysis.compute_macro_features(final_df)
-
+    final_df.to_csv("processed_market_data/%straining_data.csv" % RUN["folder"].replace("/", "_"), index=False)
     output_to_backtest(RUN, final_df)
     output_to_predictions(RUN, final_df)
 
