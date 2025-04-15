@@ -108,9 +108,9 @@ def train_test(RUN, save_to="torch_model/model_final.pt"):
 
     # Define optimizer
     optimizer = optim.Adam(model.parameters(), lr=0.0001)
-    train_loader = DataLoader(CustomDataset(train_set, device=device), batch_size=64)
-    test_loader = DataLoader(CustomDataset(test_set, device=device), batch_size=64)
-    val_loader = DataLoader(CustomDataset(val_set, device=device), batch_size=64)
+    train_loader = DataLoader(CustomDataset(train_set, device=device), batch_size=128)
+    test_loader = DataLoader(CustomDataset(test_set, device=device), batch_size=128)
+    val_loader = DataLoader(CustomDataset(val_set, device=device), batch_size=128)
     model.print_num_parameters()
     model.train_model(
         train_loader,

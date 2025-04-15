@@ -26,7 +26,6 @@ def predict_asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
         data["Date"] = pd.to_datetime(data["Date"])
         data = data[data["Date"] >= RUN["back_test_start"]]
         data = data[data["Date"] <= RUN["back_test_end"]]
-        print(data)
         if len(data.index) == 0:
             raise ValueError("Void dataframe")
 
@@ -86,7 +85,7 @@ def predict_asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
         # Create an output folder of the predictions
         output_dir = "backtest_data"
         os.makedirs(output_dir, exist_ok=True)
-        print(data)
+
         # Save predictions to CSV
         output_file = os.path.join(output_dir, f"{filename}.csv")
         data.to_csv(output_file, index=False)

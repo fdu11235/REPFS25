@@ -17,7 +17,7 @@ class TechnicalAnalysis:
         data["Z_score"] = (
             log_return - log_return.rolling(20).mean()
         ) / log_return.rolling(20).std()
-        # data["RSI"] = (talib.RSI(data["Close"])) / 100
+        data["RSI"] = (talib.RSI(data["Close"])) / 100
         upper_band, _, lower_band = talib.BBANDS(
             data["Close"], nbdevup=2, nbdevdn=2, matype=0
         )
