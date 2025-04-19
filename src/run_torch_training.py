@@ -3,27 +3,28 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 import os
-
+import numpy as np
 import libs.compute_indicators_labels_lib as compute_indicators_labels_lib
 from model.Pytorch_NNModel import NNModel
 import torch
 from torch.utils.data import DataLoader
 from model.CustomDataset import CustomDataset
 from sklearn.utils import shuffle
+from sklearn.utils.class_weight import compute_class_weight
+
 import random
 import torch.nn as nn
 import torch.optim as optim
 
 from config.config import RUN as run_conf
-from numpy.random import seed
 from libs.imbalanced_lib import get_sampler
 from sklearn.decomposition import PCA
 
 
 def train_test(RUN, save_to="torch_model/model_final.pt"):
+    seed = RUN["seed"]
+    torch.manual_seed(seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    random.seed(RUN["seed"])
-    seed(42)
 
     if torch.cuda.is_available():
         print("GPU is available!")
@@ -39,9 +40,6 @@ def train_test(RUN, save_to="torch_model/model_final.pt"):
     data = data[data["Date"] < RUN["back_test_start"]]
 
     data = data[data["pct_change"] < RUN["beta"]]  # remove outliers
-    print("???????????????????????????????????????????????????????????")
-    print(data)
-    print("???????????????????????????????????????????????????????????")
     labels = data["label"].copy()
     labels = labels.astype(int)
 
@@ -102,15 +100,24 @@ def train_test(RUN, save_to="torch_model/model_final.pt"):
     print(f"train set shape 1: {train_set.shape[1]}")
     print(f"train set columns: {train_set.columns}")
 
+    # === Compute class weights from training set ===
+    class_weights = compute_class_weight(
+        class_weight="balanced",
+        classes=np.unique(train_set["label"]),
+        y=train_set["label"].values,
+    )
+    class_weights_tensor = torch.tensor(class_weights, dtype=torch.float).to(device)
+    print(f"Class weights: {class_weights_tensor}")
+
     model = NNModel(train_set.shape[1] - 1, 3).to(device)
     # Define your loss function
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
 
     # Define optimizer
     optimizer = optim.Adam(model.parameters(), lr=0.0001)
-    train_loader = DataLoader(CustomDataset(train_set, device=device), batch_size=128)
-    test_loader = DataLoader(CustomDataset(test_set, device=device), batch_size=128)
-    val_loader = DataLoader(CustomDataset(val_set, device=device), batch_size=128)
+    train_loader = DataLoader(CustomDataset(train_set, device=device), batch_size=256)
+    test_loader = DataLoader(CustomDataset(test_set, device=device), batch_size=256)
+    val_loader = DataLoader(CustomDataset(val_set, device=device), batch_size=256)
     model.print_num_parameters()
     model.train_model(
         train_loader,

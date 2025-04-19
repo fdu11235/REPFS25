@@ -13,27 +13,50 @@ class TechnicalAnalysis:
 
     @staticmethod
     def compute_oscillators(data):
+        # === Log Return & Z-Score ===
         log_return = np.log(data["Close"]) - np.log(data["Close"].shift(1))
         data["Z_score"] = (
             log_return - log_return.rolling(20).mean()
         ) / log_return.rolling(20).std()
-        data["RSI"] = (talib.RSI(data["Close"])) / 100
+
+        # Lags for Z-score
+        data["Z_score_lag1"] = data["Z_score"].shift(1)
+        data["Z_score_lag2"] = data["Z_score"].shift(2)
+
+        # === Core Indicators ===
+        data["RSI"] = talib.RSI(data["Close"]) / 100
+        data["RSI_lag1"] = data["RSI"].shift(1)
+        data["RSI_lag2"] = data["RSI"].shift(2)
+
         upper_band, _, lower_band = talib.BBANDS(
             data["Close"], nbdevup=2, nbdevdn=2, matype=0
         )
-        # MACD calculation
         macd, signal_line, _ = talib.MACD(
             data["Close"], fastperiod=12, slowperiod=26, signalperiod=9
         )
         data["MACD"] = macd
         data["MACD_Signal_Line"] = signal_line
+        data["MACD_lag1"] = data["MACD"].shift(1)
+        data["MACD_lag2"] = data["MACD"].shift(2)
+
+        data["MACD_Hist"] = data["MACD"] - data["MACD_Signal_Line"]
+        data["MACD_Hist_lag1"] = data["MACD_Hist"].shift(1)
+        data["MACD_Hist_lag2"] = data["MACD_Hist"].shift(2)
+
         data["boll"] = (data["Close"] - lower_band) / (upper_band - lower_band)
-        data["ULTOSC"] = (talib.ULTOSC(data["High"], data["Low"], data["Close"])) / 100
+        data["boll_lag1"] = data["boll"].shift(1)
+        data["boll_lag2"] = data["boll"].shift(2)
+
+        data["ULTOSC"] = talib.ULTOSC(data["High"], data["Low"], data["Close"]) / 100
         data["pct_change"] = data["Close"].pct_change()
-        # data["zsVol"] = (data["Volume"] - data["Volume"].mean()) / data["Volume"].std()
+
+        # === Price/MA Ratios ===
         data["PR_MA_Ratio_short"] = (
             data["Close"] - talib.SMA(data["Close"], 21)
         ) / talib.SMA(data["Close"], 21)
+        data["PR_MA_Ratio_short_lag1"] = data["PR_MA_Ratio_short"].shift(1)
+        data["PR_MA_Ratio_short_lag2"] = data["PR_MA_Ratio_short"].shift(2)
+
         data["MA_Ratio_short"] = (
             talib.SMA(data["Close"], 21) - talib.SMA(data["Close"], 50)
         ) / talib.SMA(data["Close"], 50)
@@ -43,10 +66,9 @@ class TechnicalAnalysis:
         data["PR_MA_Ratio"] = (
             data["Close"] - talib.SMA(data["Close"], 50)
         ) / talib.SMA(data["Close"], 50)
+        data["PR_MA_Ratio_lag1"] = data["PR_MA_Ratio"].shift(1)
 
-        # === Additional Momentum Indicators ===
-
-        # 1. Stochastic Oscillator
+        # === Momentum Indicators ===
         slowk, slowd = talib.STOCH(
             data["High"],
             data["Low"],
@@ -59,23 +81,46 @@ class TechnicalAnalysis:
         )
         data["Stoch_K"] = slowk / 100
         data["Stoch_D"] = slowd / 100
+        data["Stoch_K_lag1"] = data["Stoch_K"].shift(1)
+        data["Stoch_D_lag1"] = data["Stoch_D"].shift(1)
 
-        # 2. Williams %R
         data["WilliamsR"] = talib.WILLR(data["High"], data["Low"], data["Close"]) / -100
-
-        # 3. Commodity Channel Index (CCI)
         data["CCI"] = (
             talib.CCI(data["High"], data["Low"], data["Close"], timeperiod=14) / 100
         )
-
-        # 4. Rate of Change (ROC)
+        data["CCI_lag1"] = data["CCI"].shift(1)
         data["ROC"] = talib.ROC(data["Close"], timeperiod=12) / 100
-
-        # 5. Momentum
+        data["ROC_lag1"] = data["ROC"].shift(1)
         data["MOM"] = talib.MOM(data["Close"], timeperiod=10) / data["Close"]
-
-        # 6. TRIX
+        data["MOM_lag1"] = data["MOM"].shift(1)
         data["TRIX"] = talib.TRIX(data["Close"], timeperiod=15)
+        data["TRIX_lag1"] = data["TRIX"].shift(1)
+
+        # === New Momentum/Trend Indicators ===
+        data["CMO"] = talib.CMO(data["Close"], timeperiod=14) / 100
+        data["CMO_lag1"] = data["CMO"].shift(1)
+        data["PRC_long"] = (data["Close"] - data["Close"].shift(90)) / data[
+            "Close"
+        ].shift(90)
+
+        # === Moving Averages (Advanced) ===
+        data["KAMA"] = talib.KAMA(data["Close"], timeperiod=30)
+        data["T3"] = talib.T3(data["Close"], timeperiod=5)
+        data["DEMA"] = talib.DEMA(data["Close"], timeperiod=30)
+
+        # === Volatility Indicators ===
+        data["ATR"] = talib.ATR(data["High"], data["Low"], data["Close"], timeperiod=14)
+        data["ATR_lag1"] = data["ATR"].shift(1)
+        data["ATR_norm"] = data["ATR"] / data["Close"]
+        data["Z_ATR"] = (data["ATR"] - data["ATR"].rolling(20).mean()) / data[
+            "ATR"
+        ].rolling(20).std()
+        data["Z_ATR_lag1"] = data["Z_ATR"].shift(1)
+
+        data["Donchian_Width"] = (
+            data["High"].rolling(window=20).max() - data["Low"].rolling(window=20).min()
+        ) / data["Close"]
+        data["Donchian_Width_lag1"] = data["Donchian_Width"].shift(1)
 
         return data
 

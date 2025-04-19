@@ -5,8 +5,8 @@ run1 = {
     "processed_folder": "processed_market_data/",
     "reports": "reports/",
     "alpha": 0.0262,  # computed in determine_alpha.py
-    "beta": 1,  # 0.1293 ignore sample greater than beta in percent of change
-    "seed": 353598215,
+    "beta": 0.1293,  # 0.1293 ignore sample greater than beta in percent of change
+    "seed": 353515,
     "commission fee": 0.001,  # 0.0004
     "b_window": 5,
     "f_window": 2,

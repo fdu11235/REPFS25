@@ -19,7 +19,7 @@ def backtest(
     df = pd.read_csv(f"{read_dir}/{filename}.csv")
     df["Date"] = pd.to_datetime(df["Date"])
     df.set_index("Date", inplace=True)
-    print(df)
+    # print(df)
     # 2. Extract price and label columns
     price = df["Close"]
     labels = df["label"]
@@ -43,9 +43,9 @@ def backtest(
             exits.append(False)
 
     # Ensure we exit on the last day if still in position
-    if in_position:
-        entries[-1] = False
-        exits[-1] = True
+    # if in_position:
+    #   entries[-1] = False
+    #  exits[-1] = True
 
     # 4. Convert to Series
     entries = pd.Series(entries, index=labels.index)
