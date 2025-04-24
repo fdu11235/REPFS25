@@ -103,11 +103,6 @@ def output_to_asset_training(final_df):
 
 def preprocess_filename(params):
     filename, RUN = params
-    # print(filename)
-    if filename.split(".")[0] in RUN["off_label_set"]:
-        print("SKIPPING %s" % filename)
-        return
-
     data = pd.read_csv(f"{RUN['folder']}{filename}")
     data = clean_df(data, filename)
     data.replace([np.inf, -np.inf], np.nan, inplace=True)
@@ -197,6 +192,7 @@ def preprocess(RUN):
     )
     output_to_backtest(RUN, final_df)
     output_to_predictions(RUN, final_df)
+    output_to_asset_training(final_df)
 
 
 def get_dataset(RUN):
@@ -211,10 +207,6 @@ def get_dataset(RUN):
     )
     ds.replace([np.inf, -np.inf], np.nan, inplace=True)
     ds = ds.dropna()
-
-    # remove off label data
-    for coin in RUN["off_label_set"]:
-        ds = ds[ds["Asset_name"] != coin]
 
     fw = RUN["f_window"]
     bw = RUN["b_window"]
@@ -242,7 +234,9 @@ def get_asset_dataset(RUN, file):
     :return: pandas dataframe wit 'label' column
     """
 
-    ds = pd.read_csv(f"asset_training/{file}")
+    ds = pd.read_csv(f"asset_training/{file}.csv")
+    ds.replace([np.inf, -np.inf], np.nan, inplace=True)
+    ds = ds.dropna()
 
     fw = RUN["f_window"]
     bw = RUN["b_window"]

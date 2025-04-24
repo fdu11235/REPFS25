@@ -1,28 +1,60 @@
+import os
 from datetime import timedelta
 from pandas import Timestamp
-from run_torch_training import train_test
+
+from trainer import Trainer
+from config.config import RUN as run_conf_base
+from libs import compute_indicators_labels_lib
 from run_predict_asset import predict_asset
 from run_backtest import backtest
-from libs.compute_indicators_labels_lib import preprocess
-from config.config import RUN as run_conf_base
-import os
+from run_backtest1 import backtest_all_assets_with_volatility_hedge
+
+
+def train_main_model():
+    compute_indicators_labels_lib.preprocess(run_conf_base)
+    trainer = Trainer(
+        RUN=run_conf_base,
+        get_data_fn=compute_indicators_labels_lib.get_dataset,
+        save_to="torch_model/model_final.pt",
+    )
+    trainer.run()
 
 
 def fixed_backtest():
-    data_dir = "market_data/"  # change this to your actual path if needed
+    train_main_model()
+
+    data_dir = "market_data/"
     asset_files = [f for f in os.listdir(data_dir) if f.endswith(".csv")]
     assets = [f.replace(".csv", "") for f in asset_files]
 
-    preprocess(run_conf_base)
-    train_test(run_conf_base)
+    for asset in assets:
+        predict_asset(run_conf_base, asset, mdl_name="torch_model/model_final.pt")
+        backtest(run_conf_base, "backtest_data", asset)
+
+
+def fixed_backtest_per_asset():
+    compute_indicators_labels_lib.preprocess(run_conf_base)
+
+    data_dir = "asset_training/"
+    asset_files = [f for f in os.listdir(data_dir) if f.endswith(".csv")]
+    assets = [f.replace(".csv", "") for f in asset_files]
 
     for asset in assets:
-        predict_asset(run_conf_base, asset, mdl_name="torch_model/best_model.pt")
+        model_path = f"torch_model/per_asset/model_{asset}.pt"
+        trainer = Trainer(
+            RUN=run_conf_base,
+            get_data_fn=compute_indicators_labels_lib.get_asset_dataset,
+            filename=asset,
+            save_to=model_path,
+        )
+        trainer.run()
+
+        predict_asset(run_conf_base, asset, mdl_name=model_path)
         backtest(run_conf_base, "backtest_data", asset)
 
 
 def expanding_window_backtest():
-    data_dir = "market_data"
+    data_dir = "market_data/"
     asset_files = [f for f in os.listdir(data_dir) if f.endswith(".csv")]
     assets = [f.replace(".csv", "") for f in asset_files]
 
@@ -32,30 +64,26 @@ def expanding_window_backtest():
 
     while current_start < final_end:
         current_end = current_start + test_window
-
-        # Copy base config and set current interval
         run_conf = run_conf_base.copy()
         run_conf["back_test_start"] = current_start
         run_conf["back_test_end"] = current_end
-
-        print(
-            f"\n======= Running interval {current_start.date()} to {current_end.date()} =======\n"
+        date_suffix = (
+            f"{current_start.strftime('%Y%m%d')}_{current_end.strftime('%Y%m%d')}"
         )
 
-        # Train once per interval
-        train_test(
-            run_conf,
-            f"torch_model/expanding_model/model_{current_start.strftime('%Y%m%d')}_{current_end.strftime('%Y%m%d')}.pt",
-        )
+        print(f"\n======= Running interval {date_suffix} =======\n")
 
-        # Predict + backtest for each asset
+        model_path = f"torch_model/expanding_model/model_{date_suffix}.pt"
+        trainer = Trainer(
+            RUN=run_conf,
+            get_data_fn=compute_indicators_labels_lib.get_dataset,
+            save_to=model_path,
+        )
+        trainer.run()
+
         for asset in assets:
             print(f"--- Processing asset: {asset} ---")
-            predict_asset(
-                run_conf,
-                asset,
-                mdl_name=f"torch_model/expanding_model/model_{current_start.strftime('%Y%m%d')}_{current_end.strftime('%Y%m%d')}.pt",
-            )
+            predict_asset(run_conf, asset, mdl_name=model_path)
             backtest(
                 run_conf,
                 "backtest_data",
@@ -63,11 +91,57 @@ def expanding_window_backtest():
                 "vectorbt_reports/expanding_master_backtest_stats.csv",
             )
 
-        # Move window forward
+        current_start = current_end
+
+
+def expanding_window_backtest_per_asset():
+    compute_indicators_labels_lib.preprocess(run_conf_base)
+
+    data_dir = "asset_training/"
+    asset_files = [f for f in os.listdir(data_dir) if f.endswith(".csv")]
+    assets = [f.replace(".csv", "") for f in asset_files]
+
+    current_start = Timestamp("2024-06-01")
+    final_end = Timestamp("2025-04-01")
+    test_window = timedelta(days=30)
+
+    while current_start < final_end:
+        current_end = current_start + test_window
+        run_conf = run_conf_base.copy()
+        run_conf["back_test_start"] = current_start
+        run_conf["back_test_end"] = current_end
+        date_suffix = (
+            f"{current_start.strftime('%Y%m%d')}_{current_end.strftime('%Y%m%d')}"
+        )
+
+        print(f"\n======= Running interval {date_suffix} =======\n")
+
+        for asset in assets:
+            print(f"--- Processing asset: {asset} ---")
+            model_path = f"torch_model/per_asset/model_{asset}_{date_suffix}.pt"
+
+            trainer = Trainer(
+                RUN=run_conf,
+                get_data_fn=compute_indicators_labels_lib.get_asset_dataset,
+                filename=asset,
+                save_to=model_path,
+            )
+            trainer.run()
+
+            predict_asset(run_conf, asset, mdl_name=model_path)
+            backtest(
+                run_conf,
+                "backtest_data",
+                asset,
+                "vectorbt_reports/per_asset_expanding_master_backtest_stats.csv",
+            )
+
         current_start = current_end
 
 
 if __name__ == "__main__":
+    # You can switch between runs here
     fixed_backtest()
-    # growing_window_backtest()
+    # fixed_backtest_per_asset()
     # expanding_window_backtest()
+    # expanding_window_backtest_per_asset()

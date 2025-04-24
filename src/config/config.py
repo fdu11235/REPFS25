@@ -4,9 +4,9 @@ run1 = {
     "folder": "market_data/",
     "processed_folder": "processed_market_data/",
     "reports": "reports/",
-    "alpha": 0.0262,  # computed in determine_alpha.py
-    "beta": 0.1293,  # 0.1293 ignore sample greater than beta in percent of change
-    "seed": 353515,
+    "alpha": 0.0262,
+    "beta": 0.1293,  # 0.1293
+    "seed": 42,
     "commission fee": 0.001,  # 0.0004
     "b_window": 5,
     "f_window": 2,
@@ -17,7 +17,6 @@ run1 = {
     "back_test_end": Timestamp("2025-04-01"),
     "suffix": "ncr",
     "stop_loss": 0.2,
-    "off_label_set": [],  # ['BTCUSDT', 'ETHUSDT', 'ALGOUSDT']  # list of coin to be excluded from training/test set. Used in backtesting
     "balance_algo": "srs",  # 'ncr', 'srs', None
     "loss_func": None,  # 'focal', 'categorical'
     "epochs": 100,  # how many epochs spent in training neural network
