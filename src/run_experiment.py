@@ -7,7 +7,7 @@ from config.config import RUN as run_conf_base
 from libs import compute_indicators_labels_lib
 from run_predict_asset import predict_asset
 from run_backtest import backtest
-from run_backtest1 import backtest_all_assets_with_volatility_hedge
+from run_backtest_hedge import backtest_all_assets_with_volatility_hedge
 
 
 def train_main_model():
@@ -88,7 +88,7 @@ def expanding_window_backtest():
                 run_conf,
                 "backtest_data",
                 asset,
-                "vectorbt_reports/expanding_master_backtest_stats.csv",
+                "vectorbt_reports/new_expanding_master_backtest_stats.csv",
             )
 
         current_start = current_end
@@ -141,7 +141,7 @@ def expanding_window_backtest_per_asset():
 
 if __name__ == "__main__":
     # You can switch between runs here
-    fixed_backtest()
+    # fixed_backtest()
     # fixed_backtest_per_asset()
-    # expanding_window_backtest()
+    expanding_window_backtest()
     # expanding_window_backtest_per_asset()
