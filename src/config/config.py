@@ -4,7 +4,7 @@ run1 = {
     "folder": "market_data/",
     "processed_folder": "processed_market_data/",
     "reports": "reports/",
-    "alpha": 0.0262,
+    "alpha": 0.0262,  # 0.262
     "beta": 0.1293,  # 0.1293
     "seed": 42,
     "commission fee": 0.001,  # 0.0004
@@ -15,6 +15,8 @@ run1 = {
     "f_lim_sup_window": 6,
     "back_test_start": Timestamp("2024-04-01"),
     "back_test_end": Timestamp("2025-04-01"),
+    "train_start": None,
+    "train_end": None,
     "suffix": "ncr",
     "stop_loss": 0.2,
     "balance_algo": "srs",  # 'ncr', 'srs', None

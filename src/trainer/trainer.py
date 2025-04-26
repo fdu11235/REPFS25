@@ -50,6 +50,13 @@ class Trainer:
         data = data[data["Date"] < self.RUN["back_test_start"]]
         data = data[data["pct_change"] < self.RUN["beta"]]
 
+        # === Optional: Rolling training window filter ===
+        train_start = self.RUN["train_start"]
+        train_end = self.RUN["train_end"]
+
+        if train_start is not None:
+            data = data[(data["Date"] >= train_start) & (data["Date"] < train_end)]
+
         labels = data["label"].astype(int)
         data.drop(
             columns=[

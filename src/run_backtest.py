@@ -9,7 +9,7 @@ def backtest(
     RUN,
     read_dir,
     filename,
-    master_path="vectorbt_reports/new_fixed_master_backtest_stats.csv",
+    master_path="vectorbt_reports/fixed_master_backtest_stats.csv",
     plot_dir_root="vectorbt_reports/expanding_plots",
 ):
     """

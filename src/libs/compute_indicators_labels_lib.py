@@ -9,6 +9,7 @@ from multiprocessing import pool
 import numpy as np
 import glob
 from functools import reduce
+from run_alpha_beta import get_thresholds
 
 
 # https://stats.stackexchange.com/questions/312780/why-is-accuracy-not-the-best-measure-for-assessing-classification-models
@@ -110,7 +111,7 @@ def preprocess_filename(params):
     data = TechnicalAnalysis.compute_oscillators(data)
     # data = TechnicalAnalysis.find_patterns(data)
     data = TechnicalAnalysis.add_timely_data(data)
-
+    # alpha, beta = get_thresholds(data)
     labels = pd.DataFrame()
     for bw in range(1, RUN["b_lim_sup_window"]):
         for fw in range(1, RUN["f_lim_sup_window"]):
@@ -190,7 +191,7 @@ def preprocess(RUN):
         "processed_market_data/%straining_data.csv" % RUN["folder"].replace("/", "_"),
         index=False,
     )
-    output_to_backtest(RUN, final_df)
+    # output_to_backtest(RUN, final_df)
     output_to_predictions(RUN, final_df)
     output_to_asset_training(final_df)
 
@@ -290,7 +291,7 @@ def get_backtest_dataset(RUN, filename):
 
 def get_predictions_dataset(RUN, filename):
     """
-    returns the backtesting dataset labeled with given forward and backward window
+    returns the dataset where we run predictions
     :param RUN: run configuration dictionary
     :return: pandas dataframe wit 'label' column
     """

@@ -89,11 +89,22 @@ def predict_asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
     # Create an output folder of the predictions
     output_dir = "backtest_data"
     os.makedirs(output_dir, exist_ok=True)
-
-    # Save predictions to CSV
     output_file = os.path.join(output_dir, f"{filename}.csv")
-    data.to_csv(output_file, index=False)
-    print(f"Predictions saved to {output_file}")
+
+    # === Append if file exists ===
+    if os.path.exists(output_file):
+        existing = pd.read_csv(output_file)
+        existing["Date"] = pd.to_datetime(existing["Date"])
+        combined = pd.concat([existing, data], ignore_index=True)
+        combined.drop_duplicates(
+            subset=["Date"], inplace=True
+        )  # optional deduplication
+        combined.sort_values("Date", inplace=True)
+        combined.to_csv(output_file, index=False)
+        print(f"Appended predictions to {output_file}")
+    else:
+        data.to_csv(output_file, index=False)
+        print(f"Predictions saved to {output_file}")
 
 
 if __name__ == "__main__":
