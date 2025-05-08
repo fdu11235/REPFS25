@@ -223,11 +223,11 @@ class TechnicalAnalysis:
             if z["s-1"] > z["Close_MA"]:
                 return 0  # -1
             elif z["s-1"] < z["Close_MA"]:
-                return 2  # 1
+                return 2
             else:
-                return 1  # 0
+                return 1
         else:
-            return 1  # 0
+            return 1
 
     @staticmethod
     def find_patterns(x):

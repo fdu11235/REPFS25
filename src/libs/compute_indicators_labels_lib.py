@@ -33,10 +33,10 @@ def clean_df(df, filename=None):
         f"{prefix}Open": "Open",
         f"{prefix}High": "High",
         f"{prefix}Low": "Low",
-        f"{prefix}Close": "Close",
+        # f"{prefix}Close": "Close",
         f"{prefix}Volume": "Volume",
-        f"{prefix}Adj Close": "Adjusted",  # sometimes it's named this way
-        f"{prefix}Adjusted": "Adjusted",  # or this way
+        f"{prefix}Adj Close": "Close",  # sometimes it's named this way
+        f"{prefix}Adjusted": "Close",  # or this way
     }
     df["Asset_name"] = asset_name
     # Always rename "date" to "Date"
@@ -122,6 +122,26 @@ def preprocess_filename(params):
     return data, labels
 
 
+def preprocess_thresholds(params):
+    filename, RUN = params
+    data = pd.read_csv(f"{RUN['folder']}{filename}")
+    data = clean_df(data, filename)
+    data.replace([np.inf, -np.inf], np.nan, inplace=True)
+    data = data.dropna()
+    data = TechnicalAnalysis.compute_oscillators(data)
+    # data = TechnicalAnalysis.find_patterns(data)
+    data = TechnicalAnalysis.add_timely_data(data)
+    alpha, beta = get_thresholds(data)
+    labels = pd.DataFrame()
+    for bw in range(1, RUN["b_lim_sup_window"]):
+        for fw in range(1, RUN["f_lim_sup_window"]):
+            labels["lab_%d_%d" % (bw, fw)] = TechnicalAnalysis.assign_labels(
+                data, bw, fw, alpha, beta
+            )
+
+    return data, labels
+
+
 # Helper function to load and format CSVs from a folder
 def load_data_from_folder(folder):
     csv_files = glob.glob(os.path.join(folder, "*.csv"))
@@ -191,8 +211,61 @@ def preprocess(RUN):
         "processed_market_data/%straining_data.csv" % RUN["folder"].replace("/", "_"),
         index=False,
     )
-    # output_to_backtest(RUN, final_df)
     output_to_predictions(RUN, final_df)
+
+
+def preprocess_asset(RUN):
+    """
+    Parallel preprocessing and labeling of datasets
+    Save final dataset to a file in preprocessed_data folder
+    :param RUN: configuration dict
+    :return:
+    """
+    jobs = pool.Pool(24)
+
+    # print("Preprocessing with: %s" % RUN)
+    filenames = os.listdir(RUN["folder"])
+    args = zip(filenames, [RUN] * len(filenames))
+    args = [(k, v) for k, v in args]
+    print(args)
+
+    # We engineer features of market data
+    data_labels = jobs.map(preprocess_thresholds, args)
+    jobs.terminate()
+    data_list = [d[0] for d in data_labels]
+    labels_list = [d[1] for d in data_labels]
+
+    concat_data = pd.concat(data_list, ignore_index=True)
+    concat_data["Date"] = pd.to_datetime(concat_data["Date"])
+    concat_labels = pd.concat(labels_list, ignore_index=True)
+
+    # After merging with labels
+    market_df = pd.concat(
+        [concat_data.reset_index(drop=True), concat_labels.reset_index(drop=True)],
+        axis=1,
+    )
+    market_df = market_df.dropna()
+
+    # We add macrodata from following directories
+    folders = ["inflation", "economy", "expectation", "labor_market", "interest_rates"]
+
+    # Load all data from each folder
+    all_dfs = []
+    for folder in folders:
+        all_dfs.extend(load_data_from_folder(folder))
+
+    # Merge all datasets from the above folders on 'Date'
+    combined_macro_df = reduce(
+        lambda left, right: pd.merge(left, right, on="Date", how="outer"), all_dfs
+    )
+
+    # Merge everything on 'Date'
+    final_df = pd.merge(combined_macro_df, market_df, on="Date", how="outer")
+    final_df = final_df.sort_values("Date").reset_index(drop=True)
+
+    # feature engineering on macro data
+    final_df = final_df.dropna()
+    final_df = TechnicalAnalysis.compute_macro_features(final_df)
     output_to_asset_training(final_df)
 
 

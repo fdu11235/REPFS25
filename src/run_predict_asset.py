@@ -16,7 +16,9 @@ from sklearn.decomposition import PCA
 import random
 
 
-def predict_asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
+def predict_asset(
+    RUN, filename, mdl_name="torch_model/best_model.pt", save_to="", single=False
+):
     """
     Predict BUY, HOLD and SELL signals on a timeseries
     """
@@ -24,7 +26,12 @@ def predict_asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
     torch.manual_seed(seed)
     nr = StandardScaler()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    data = compute_indicators_labels_lib.get_predictions_dataset(RUN, f"{filename}")
+    dataset_func = (
+        compute_indicators_labels_lib.get_asset_dataset
+        if single
+        else compute_indicators_labels_lib.get_predictions_dataset
+    )
+    data = dataset_func(RUN, filename)
     data["Date"] = pd.to_datetime(data["Date"])
     data = data[data["Date"] >= RUN["back_test_start"]]
     data = data[data["Date"] <= RUN["back_test_end"]]
@@ -48,6 +55,10 @@ def predict_asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
     )
     if len(data.index) == 0:
         raise ValueError("Void dataframe")
+    # Check for inf or too large values
+    if not np.all(np.isfinite(data.select_dtypes(include=[np.number]))):
+        raise ValueError("Invalid values (inf or too large) in dataframe")
+
     columns = data.columns
     index = data.index
     nr.fit(data)
@@ -87,9 +98,8 @@ def predict_asset(RUN, filename, mdl_name="torch_model/best_model.pt"):
     data["Date"] = ohlc["Date"]
 
     # Create an output folder of the predictions
-    output_dir = "backtest_data"
-    os.makedirs(output_dir, exist_ok=True)
-    output_file = os.path.join(output_dir, f"{filename}.csv")
+    os.makedirs(save_to, exist_ok=True)
+    output_file = os.path.join(save_to, f"{filename}.csv")
 
     # === Append if file exists ===
     if os.path.exists(output_file):

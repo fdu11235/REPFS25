@@ -56,9 +56,8 @@ def backtest(
         entries=entries,
         exits=exits,
         init_cash=10_000,
-        fees=0.001,
-        sl_stop=0.05,  # 5% stop-loss
-        tp_stop=0.20,  # 10% take-profit
+        fees=0.00001,
+        sl_stop=0.1,  # 10% stop-loss
         freq="1D",
     )
     # Create output directory if it doesn't exist

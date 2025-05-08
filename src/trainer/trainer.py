@@ -23,11 +23,17 @@ from sklearn.decomposition import PCA
 
 class Trainer:
     def __init__(
-        self, RUN, get_data_fn, filename=None, save_to="torch_model/model_final.pt"
+        self,
+        RUN,
+        get_data_fn,
+        filename=None,
+        save_to="torch_model/model_final.pt",
+        report_save_to="training_reports/expanding_model_reports.csv",
     ):
         self.RUN = RUN
         self.get_data_fn = get_data_fn
         self.filename = filename
+        self.report_save_to = report_save_to
         self.save_to = save_to
         self.seed = RUN["seed"]
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -90,6 +96,7 @@ class Trainer:
         data.dropna(inplace=True)
         data = shuffle(data, random_state=self.seed)
         data = self.sampler(data)
+        print(data["label"].value_counts())
 
         return data
 
@@ -131,7 +138,43 @@ class Trainer:
     def evaluate(self, model, loader, true_labels, name):
         preds = model.predict(loader)
         report = classification_report(true_labels, preds, digits=2, output_dict=True)
-        print(f"{'='*20} {name} Report {'='*20}\n{report}")
+
+        print(
+            f"{'-'*20} {name} Report {'-'*20}\n{classification_report(true_labels, preds, digits=2)}"
+        )
+
+        # Convert report dictionary to a flat DataFrame
+        report_df = pd.DataFrame(report).transpose().reset_index()
+        report_df["run_name"] = name
+        report_df["Date"] = (
+            f"{self.RUN['back_test_start'].strftime('%Y%m%d')}"
+            if self.RUN.get("back_test_start")
+            else ""
+        )
+        report_df["Asset"] = self.filename
+        # Optional: reorder
+        cols = [
+            "Date",
+            "run_name",
+            "index",
+            "precision",
+            "recall",
+            "f1-score",
+            "support",
+            "Asset",
+        ]
+        report_df = report_df[cols]
+
+        # Path to your report CSV
+        report_path = self.report_save_to
+        os.makedirs(os.path.dirname(report_path), exist_ok=True)
+
+        # Append or create
+        if os.path.exists(report_path):
+            report_df.to_csv(report_path, mode="a", header=False, index=False)
+        else:
+            report_df.to_csv(report_path, mode="w", header=True, index=False)
+
         return report
 
     def run(self):

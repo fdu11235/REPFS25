@@ -4,12 +4,12 @@ run1 = {
     "folder": "market_data/",
     "processed_folder": "processed_market_data/",
     "reports": "reports/",
-    "alpha": 0.0262,  # 0.262
-    "beta": 0.1293,  # 0.1293
+    "alpha": 0.0262,  # best:0.0262
+    "beta": 0.1293,  # best:0.1293
     "seed": 42,
-    "commission fee": 0.001,  # 0.0004
+    "commission fee": 0.00001,  # 0.0004
     "b_window": 5,
-    "f_window": 2,
+    "f_window": 1,
     # used in define the grid for searching backward and forward window
     "b_lim_sup_window": 6,
     "f_lim_sup_window": 6,
