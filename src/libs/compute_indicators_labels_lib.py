@@ -1,6 +1,7 @@
 from operator import concat
 import os
 import pandas as pd
+
 from libs.technical_analysis_lib import TechnicalAnalysis
 import datetime
 import random
@@ -17,18 +18,12 @@ def clean_df(df, filename=None):
     # Define a mapping from full Yahoo column names to standard names
     # Find the prefix dynamically (e.g., "BTC.F" or "AAPL")
     asset_name = os.path.splitext(os.path.basename(filename))[0]
-    print(df)
-    print("==========================")
-    print(asset_name)
-    print("COLUMNS:", df.columns.tolist())
     for col in df.columns:
         if "Open" in col:
             prefix = col.split("Open")[0]
             break
-    print("==========================")
     if "prefix" not in locals():
         raise RuntimeError("Prefix was never assigned — check column names!")
-    print(prefix)
     rename_map = {
         f"{prefix}Open": "Open",
         f"{prefix}High": "High",
@@ -45,6 +40,8 @@ def clean_df(df, filename=None):
     # Select the columns you're interested in
     columns_to_keep = ["Date", "Open", "High", "Low", "Close", "Volume", "Asset_name"]
     df = df[[col for col in columns_to_keep if col in df.columns]]
+    df["Date"] = pd.to_datetime(df["Date"])
+    df = df[~df["Date"].dt.weekday.isin([5, 6])]
     return df
 
 

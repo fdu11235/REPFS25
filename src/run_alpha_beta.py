@@ -8,7 +8,7 @@ def calculate_thresholds(asset):
         "processed_market_data/%straining_data.csv" % RUN["folder"].replace("/", "_"),
         index_col=0,
     )
-    # df = df[df["Asset_name"] == asset]
+    #df = df[df["Asset_name"] == asset]
     """
         .
         .   HOLD
@@ -105,4 +105,4 @@ def get_thresholds(df):
 
 
 if __name__ == "__main__":
-    calculate_thresholds("AAPL")
+    #calculate_thresholds("BTC-USD")

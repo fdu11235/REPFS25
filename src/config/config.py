@@ -4,8 +4,8 @@ run1 = {
     "folder": "market_data/",
     "processed_folder": "processed_market_data/",
     "reports": "reports/",
-    "alpha": 0.0262,  # best:0.0262
-    "beta": 0.1293,  # best:0.1293
+    "alpha": 0.0250,  # best:0.0250 #0.0067 5
+    "beta": 0.1293,  # best:0.1293 #0.0178 1
     "seed": 42,
     "commission fee": 0.00001,  # 0.0004
     "b_window": 5,

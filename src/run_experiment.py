@@ -1,7 +1,7 @@
 import os
 from datetime import timedelta
 from pandas import Timestamp, DateOffset
-
+import shutil
 from trainer import Trainer
 from config.config import RUN as run_conf_base
 from libs import compute_indicators_labels_lib
@@ -23,6 +23,11 @@ def train_main_model():
 
 
 def classic_backtest():
+    # Clear the backtest directory
+    backtest_dir = "backtest_data/classic"
+    if os.path.exists(backtest_dir):
+        shutil.rmtree(backtest_dir)  # Delete the entire directory and its contents
+    os.makedirs(backtest_dir, exist_ok=True)  # Recreate the directory
     train_main_model()
 
     data_dir = "market_data/"
@@ -86,7 +91,7 @@ def expanding_window_backtest():
 
     current_start = Timestamp("2024-04-01")
     final_end = Timestamp("2025-04-01")
-    test_window = DateOffset(days=1)
+    test_window = DateOffset(months=1)
 
     while current_start < final_end:
         current_end = current_start + test_window
@@ -104,7 +109,7 @@ def expanding_window_backtest():
             RUN=run_conf,
             get_data_fn=compute_indicators_labels_lib.get_dataset,
             save_to=model_path,
-            report_save_to="training_report/expanding_window_daily.csv",
+            report_save_to="training_report/expanding_window_monthly.csv",
         )
         trainer.run()
 
@@ -115,7 +120,7 @@ def expanding_window_backtest():
                     run_conf,
                     asset,
                     mdl_name=model_path,
-                    save_to="backtest_data/expanding_window_daily",
+                    save_to="backtest_data/expanding_window_monthly",
                 )
             except ValueError as e:
                 if str(e) in [
@@ -132,10 +137,10 @@ def expanding_window_backtest():
     for asset in assets:
         backtest(
             RUN=run_conf,
-            read_dir="backtest_data/expanding_window_daily",
+            read_dir="backtest_data/expanding_window_monthly",
             filename=asset,
-            master_path="vectorbt_reports/expanding_stats_daily.csv",
-            plot_dir_root="vectorbt_reports/expanding_plots_daily",
+            master_path="vectorbt_reports/expanding_stats_monthly.csv",
+            plot_dir_root="vectorbt_reports/expanding_plots_monthly",
         )
 
 
@@ -202,7 +207,7 @@ def rolling_window_backtest():
 
     current_start = Timestamp("2024-04-01")
     final_end = Timestamp("2025-04-01")
-    test_window = DateOffset(days=1)
+    test_window = DateOffset(months=1)
     train_window = timedelta(days=2268)
 
     while current_start < final_end:
@@ -224,7 +229,7 @@ def rolling_window_backtest():
             RUN=run_conf,
             get_data_fn=compute_indicators_labels_lib.get_dataset,
             save_to=model_path,
-            report_save_to="training_report/rolling_daily.csv",
+            report_save_to="training_report/rolling_monthly.csv",
         )
         trainer.run()
 
@@ -234,7 +239,7 @@ def rolling_window_backtest():
                     run_conf,
                     asset,
                     mdl_name=model_path,
-                    save_to="backtest_data/rolling_daily",
+                    save_to="backtest_data/rolling_monthly",
                 )
             except ValueError as e:
                 if str(e) in [
@@ -253,8 +258,8 @@ def rolling_window_backtest():
             RUN=run_conf,
             read_dir="backtest_data/rolling_daily",
             filename=asset,
-            master_path="vectorbt_reports/rolling_daily.csv",
-            plot_dir_root="vectorbt_reports/rolling_daily_plots",
+            master_path="vectorbt_reports/rolling_monthly.csv",
+            plot_dir_root="vectorbt_reports/rolling_monthly_plots",
         )
 
 
@@ -342,10 +347,10 @@ def backtesto():
 
 if __name__ == "__main__":
     # You can switch between runs here
-    # classic_backtest()
+    classic_backtest()
     # classic_backtest_per_asset()
-    expanding_window_backtest()
+    # expanding_window_backtest()
     # expanding_window_backtest_per_asset()
-    rolling_window_backtest()
+    # rolling_window_backtest()
     # rolling_window_backtest_per_asset()
     # backtesto()

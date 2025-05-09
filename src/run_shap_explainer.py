@@ -17,7 +17,7 @@ import shap
 import os
 
 
-def explain_shap(RUN, mdl_name="torch_model/best_model.pt"):
+def explain_shap(RUN, mdl_name="torch_model/model_final.pt"):
     random.seed(RUN["seed"])
     seed(42)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

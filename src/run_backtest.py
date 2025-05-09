@@ -98,4 +98,4 @@ def backtest(
 
 
 if __name__ == "__main__":
-    backtest(run_conf, "backtest_data", "BTC-USD")
+    backtest(run_conf, "backtest_data", "TSLA")
