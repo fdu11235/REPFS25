@@ -289,5 +289,259 @@ def backtest_multi_asset_p(
         )
 
 
+def backtest_equal_weight_monthly_rebalanced(
+    RUN,
+    read_dir,
+    master_path="vectorbt_reports/portfolio_classic_backtest_stats.csv",
+    plot_dir_root="vectorbt_reports/portfolio_classic_plots",
+    n_permutations=10000,
+):
+    """
+    Backtest all assets in read_dir as an equal-weight monthly rebalanced portfolio.
+    Perform bootstrap resampling to assess statistical significance of mean return.
+    """
+    price_list = []
+    asset_names = []
+
+    for file in os.listdir(read_dir):
+        if file.endswith(".csv"):
+            asset_name = file.replace(".csv", "")
+            df = pd.read_csv(os.path.join(read_dir, file))
+            df["Date"] = pd.to_datetime(df["Date"])
+            df = df[df["Date"] >= "2024-04-01"]
+            df.set_index("Date", inplace=True)
+            price_list.append(df["Close"])
+            asset_names.append(asset_name)
+
+    # Combine prices into DataFrame
+    price_df = pd.concat(price_list, axis=1)
+    price_df.columns = asset_names
+
+    first_days = price_df.groupby(price_df.index.to_period("M")).apply(
+        lambda df: df.index.min()
+    )
+
+    rebalance_weights = pd.DataFrame(
+        index=first_days.values, columns=price_df.columns, data=1 / price_df.shape[1]
+    )
+
+    # Forward fill to apply weights until next rebalance
+    daily_weights = rebalance_weights.reindex(price_df.index)
+    print(daily_weights)
+
+    # Optional debug print
+    print("\nSample of daily_weights (April–June 2024):")
+    print(daily_weights.loc["2024-04":"2024-06"])
+
+    # --- Build the portfolio ---
+    portfolio = vbt.Portfolio.from_orders(
+        close=price_df,
+        size=daily_weights,
+        size_type="targetpercent",
+        init_cash=10_000,
+        fees=0.00001,
+        freq="1D",
+    )
+
+    stats = portfolio.stats()
+    print(stats)
+
+    # Calculate portfolio-level daily returns
+    # Get per-asset daily returns
+    daily_returns = portfolio.daily_returns().dropna()
+
+    results = {}
+
+    for asset in daily_returns.columns:
+        r = daily_returns[asset].values
+        real_mean = np.mean(r)
+
+        # Zero-center the returns
+        zero_centered = r - real_mean
+
+        # Bootstrap sampling
+        boot_means = np.array(
+            [
+                np.mean(np.random.choice(zero_centered, size=len(r), replace=True))
+                for _ in range(n_permutations)
+            ]
+        )
+
+        # p-value: probability that bootstrapped mean is ≥ real mean
+        p_value = np.mean(boot_means >= real_mean)
+
+        results[asset] = {
+            "mean_return": real_mean,
+            "p_value": p_value,
+        }
+
+        print(f"{asset}: mean return = {real_mean:.6f}, p-value = {p_value:.4f}")
+
+    print(f"\nMonthly Rebalanced Equal-Weight Portfolio:")
+    print(f"Mean return = {real_mean:.6f}, bootstrap p-value = {p_value:.4f}")
+
+    return portfolio, stats, real_mean, p_value
+
+
+def backtest_equal_weight_buy_and_hold(
+    RUN,
+    read_dir,
+    start_date="2024-04-01",
+    n_permutations=10000,
+):
+    """
+    Backtest a buy-and-hold strategy where each asset receives equal weight at the start.
+    No rebalancing occurs after the initial allocation.
+    """
+    price_list = []
+    asset_names = []
+
+    for file in os.listdir(read_dir):
+        if file.endswith(".csv"):
+            asset_name = file.replace(".csv", "")
+            df = pd.read_csv(os.path.join(read_dir, file))
+            df["Date"] = pd.to_datetime(df["Date"])
+            df = df[df["Date"] >= start_date]
+            df.set_index("Date", inplace=True)
+            price_list.append(df["Close"])
+            asset_names.append(asset_name)
+
+    # Combine into one DataFrame
+    price_df = pd.concat(price_list, axis=1)
+    price_df.columns = asset_names
+
+    # Create entry and exit signals
+    entry_signals = pd.DataFrame(False, index=price_df.index, columns=price_df.columns)
+    exit_signals = pd.DataFrame(False, index=price_df.index, columns=price_df.columns)
+
+    entry_signals.iloc[0] = True  # buy all assets on the first day
+    exit_signals.iloc[-1] = True  # sell all assets on the last day
+
+    # Run the portfolio
+    portfolio = vbt.Portfolio.from_signals(
+        close=price_df,
+        entries=entry_signals,
+        exits=exit_signals,
+        init_cash=10_000,
+        fees=0.00001,
+        freq="1D",
+    )
+
+    stats = portfolio.stats()
+    print("\nBuy-and-Hold Portfolio Statistics:")
+    print(stats)
+    daily_returns = portfolio.daily_returns().dropna()
+    results = {}
+
+    for asset in daily_returns.columns:
+        r = daily_returns[asset].values
+        real_mean = np.mean(r)
+
+        # Zero-center the returns
+        zero_centered = r - real_mean
+
+        # Bootstrap sampling
+        boot_means = np.array(
+            [
+                np.mean(np.random.choice(zero_centered, size=len(r), replace=True))
+                for _ in range(n_permutations)
+            ]
+        )
+
+        # p-value: probability that bootstrapped mean is ≥ real mean
+        p_value = np.mean(boot_means >= real_mean)
+
+        results[asset] = {
+            "mean_return": real_mean,
+            "p_value": p_value,
+        }
+
+        print(f"{asset}: mean return = {real_mean:.6f}, p-value = {p_value:.4f}")
+
+    return portfolio, stats
+
+
+def backtest_spy(
+    RUN,
+    read_dir,
+    start_date="2024-04-01",
+    n_permutations=10000,
+):
+    """
+    Backtest a buy-and-hold strategy where each asset receives equal weight at the start.
+    No rebalancing occurs after the initial allocation.
+    """
+    price_list = []
+    asset_names = []
+
+    for file in os.listdir(read_dir):
+        if file.endswith(".csv"):
+            asset_name = file.replace(".csv", "")
+            df = pd.read_csv(os.path.join(read_dir, file))
+            df["Date"] = pd.to_datetime(df["Date"])
+            df = df[df["Date"] >= start_date]
+            df.set_index("Date", inplace=True)
+            price_list.append(df["Close"])
+            asset_names.append(asset_name)
+
+    # Combine into one DataFrame
+    price_df = pd.concat(price_list, axis=1)
+    price_df.columns = asset_names
+
+    # Create entry and exit signals
+    entry_signals = pd.DataFrame(False, index=price_df.index, columns=price_df.columns)
+    exit_signals = pd.DataFrame(False, index=price_df.index, columns=price_df.columns)
+
+    entry_signals.iloc[0] = True  # buy all assets on the first day
+    exit_signals.iloc[-1] = True  # sell all assets on the last day
+
+    # Run the portfolio
+    portfolio = vbt.Portfolio.from_signals(
+        close=price_df,
+        entries=entry_signals,
+        exits=exit_signals,
+        init_cash=10_000,
+        fees=0.00001,
+        freq="1D",
+    )
+
+    stats = portfolio.stats()
+    print("\nBuy-and-Hold Portfolio Statistics:")
+    print(stats)
+    daily_returns = portfolio.daily_returns().dropna()
+    results = {}
+
+    for asset in daily_returns.columns:
+        r = daily_returns[asset].values
+        real_mean = np.mean(r)
+
+        # Zero-center the returns
+        zero_centered = r - real_mean
+
+        # Bootstrap sampling
+        boot_means = np.array(
+            [
+                np.mean(np.random.choice(zero_centered, size=len(r), replace=True))
+                for _ in range(n_permutations)
+            ]
+        )
+
+        # p-value: probability that bootstrapped mean is ≥ real mean
+        p_value = np.mean(boot_means >= real_mean)
+
+        results[asset] = {
+            "mean_return": real_mean,
+            "p_value": p_value,
+        }
+
+        print(f"{asset}: mean return = {real_mean:.6f}, p-value = {p_value:.4f}")
+
+    return portfolio, stats
+
+
 if __name__ == "__main__":
-    backtest_multi_asset_p(run_conf, "backtest_data/rolling_daily_16")
+    backtest_multi_asset_p(run_conf, "backtest_data/expanding_per_asset_daily")
+    backtest_multi_asset_p(run_conf, "backtest_data/rolling_daily_per_asset")
+    # backtest_equal_weight_monthly_rebalanced(run_conf, "backtest_data/classic")
+    # backtest_equal_weight_buy_and_hold(run_conf, "backtest_data/classic")
+    # backtest_spy(run_conf, "backtest_data/spy")

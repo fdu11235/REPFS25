@@ -103,12 +103,16 @@ def explain_shap(RUN, mdl_name="torch_model/model_final.pt"):
     os.makedirs(output_dir, exist_ok=True)
 
     # Create SHAP plot
+    plt.figure(figsize=(13, 6))
     shap.summary_plot(
         shap_values[:, :, 0],
         test_samples.cpu().numpy(),
         feature_names=train_set.columns.tolist(),
-        show=True,
+        show=False,  # Important: suppress automatic display
     )
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, "shap_summary_plot.pdf"))
+    plt.close()
     """¨
     shap.force_plot(
         explainer.expected_value[0],
@@ -118,28 +122,39 @@ def explain_shap(RUN, mdl_name="torch_model/model_final.pt"):
         matplotlib=True,  # use matplotlib backend
     )
     """
-
+    plt.figure(figsize=(15, 8))
     shap.bar_plot(
         shap_values[:, :, 1].mean(axis=0),
         feature_names=train_set.columns.tolist(),
         max_display=30,
+        show=False,
     )
 
-    plt.savefig(os.path.join(output_dir, "bar_plot_class1.png"), bbox_inches="tight")
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, "bar_plot_class1.pdf"))
+    plt.close()
 
+    plt.figure(figsize=(15, 8))
     shap.bar_plot(
         shap_values[:, :, 0].mean(axis=0),
         feature_names=train_set.columns.tolist(),
         max_display=30,
+        show=False,
     )
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, "bar_plot_class0.pdf"))
+    plt.close()
 
-    plt.savefig(os.path.join(output_dir, "bar_plot_class0.png"), bbox_inches="tight")
-
+    plt.figure(figsize=(15, 8))
     shap.bar_plot(
         shap_values[:, :, 2].mean(axis=0),
         feature_names=train_set.columns.tolist(),
         max_display=30,
+        show=False,
     )
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, "bar_plot_class2.pdf"))
+    plt.close()
 
 
 if __name__ == "__main__":

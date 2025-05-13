@@ -9,7 +9,7 @@ run1 = {
     "seed": 42,
     "commission fee": 0.00001,  # 0.0004
     "b_window": 5,
-    "f_window": 1,
+    "f_window": 2,
     # used in define the grid for searching backward and forward window
     "b_lim_sup_window": 6,
     "f_lim_sup_window": 6,
