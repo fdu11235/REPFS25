@@ -45,7 +45,6 @@ def plot_tsla_trades(
         exit_dates, exit_prices, marker="v", color="red", s=100, label="Exit", zorder=3
     )
 
-    ax.set_title("GOOGL Price with Executed Trades", fontsize=14)
     ax.set_xlabel("Date")
     ax.set_ylabel("Price")
     # ax.legend()
@@ -65,6 +64,65 @@ def plot_tsla_trades(
     # Save with transparent background
     plt.savefig(output_path, format="pdf", transparent=True)
     plt.close()
+
+
+def plot_all_trades(price_df, entry_df, exit_df, output_dir="vectorbt_reports/trades"):
+    os.makedirs(output_dir, exist_ok=True)
+
+    for asset in price_df.columns:
+        price = price_df[asset].dropna()
+        entry = entry_df[asset].reindex(price.index).fillna(False).astype(bool)
+        exit_ = exit_df[asset].reindex(price.index).fillna(False).astype(bool)
+
+        # Entry/Exit points
+        entry_dates = entry[entry].index
+        entry_prices = price.loc[entry_dates]
+
+        exit_dates = exit_[exit_].index
+        exit_prices = price.loc[exit_dates]
+
+        # Plotting
+        plt.style.use("ggplot")
+        fig, ax = plt.subplots(figsize=(14, 6), facecolor="none")
+
+        ax.plot(
+            price.index,
+            price.values,
+            label=f"{asset} Price",
+            color="black",
+            linewidth=1.5,
+        )
+        ax.scatter(
+            entry_dates,
+            entry_prices,
+            marker="^",
+            color="green",
+            s=100,
+            label="Entry",
+            zorder=3,
+        )
+        ax.scatter(
+            exit_dates,
+            exit_prices,
+            marker="v",
+            color="red",
+            s=100,
+            label="Exit",
+            zorder=3,
+        )
+
+        # ax.set_title(f"{asset} Trades")
+        ax.set_xlabel("Date")
+        ax.set_ylabel("Price")
+        ax.grid(
+            True, which="major", linestyle="-", linewidth=0.1, color="black", alpha=0.3
+        )
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+
+        output_path = os.path.join(output_dir, f"{asset}_trades.pdf")
+        plt.savefig(output_path, format="pdf", transparent=True)
+        plt.close()
 
 
 def backtest_multi_asset(
@@ -89,6 +147,7 @@ def backtest_multi_asset(
             asset_name = file.replace(".csv", "")
             df = pd.read_csv(os.path.join(read_dir, file))
             df["Date"] = pd.to_datetime(df["Date"])
+            df = df[df["Date"] < "2025-04-01"]
             df.set_index("Date", inplace=True)
 
             price = df["Close"]
@@ -175,9 +234,7 @@ def backtest_multi_asset(
     print(f"Bootstrap mean: {np.mean(boot_means):.6f}")
     print(f"Empirical p-value (H0: mean <= 0): {p_value:.4f}")
 
-    # plot_tsla_trades(
-    #    price_df, entry_df, exit_df, output_path="vectorbt_reports/googl_trades.pdf"
-    # )
+    plot_all_trades(price_df, entry_df, exit_df)
 
 
 def backtest_multi_asset_p(
@@ -327,11 +384,13 @@ def backtest_equal_weight_monthly_rebalanced(
 
     # Forward fill to apply weights until next rebalance
     daily_weights = rebalance_weights.reindex(price_df.index)
+    # daily_weights.ffill(inplace=True)
     print(daily_weights)
 
     # Optional debug print
     print("\nSample of daily_weights (April–June 2024):")
-    print(daily_weights.loc["2024-04":"2024-06"])
+    print(daily_weights.loc["2024-04-01":"2024-04-05"])
+    print(daily_weights.loc["2024-05-01":"2024-05-05"])
 
     # --- Build the portfolio ---
     portfolio = vbt.Portfolio.from_orders(
@@ -340,11 +399,15 @@ def backtest_equal_weight_monthly_rebalanced(
         size_type="targetpercent",
         init_cash=10_000,
         fees=0.00001,
+        cash_sharing=False,
         freq="1D",
     )
 
     stats = portfolio.stats()
     print(stats)
+    print(portfolio.value().loc["2024-04-01":"2024-04-05"])
+    print(portfolio.value().loc["2024-05-01":"2024-05-05"])
+    print(portfolio.value().loc["2025-03-26":"2025-04-01"])
 
     # Calculate portfolio-level daily returns
     # Get per-asset daily returns
@@ -402,6 +465,7 @@ def backtest_equal_weight_buy_and_hold(
             df = pd.read_csv(os.path.join(read_dir, file))
             df["Date"] = pd.to_datetime(df["Date"])
             df = df[df["Date"] >= start_date]
+            df = df[df["Date"] < "2025-04-01"]
             df.set_index("Date", inplace=True)
             price_list.append(df["Close"])
             asset_names.append(asset_name)
@@ -423,6 +487,7 @@ def backtest_equal_weight_buy_and_hold(
         entries=entry_signals,
         exits=exit_signals,
         init_cash=10_000,
+        cash_sharing=False,
         fees=0.00001,
         freq="1D",
     )
@@ -430,6 +495,7 @@ def backtest_equal_weight_buy_and_hold(
     stats = portfolio.stats()
     print("\nBuy-and-Hold Portfolio Statistics:")
     print(stats)
+    print(portfolio.value().tail())
     daily_returns = portfolio.daily_returns().dropna()
     results = {}
 
@@ -480,7 +546,9 @@ def backtest_spy(
             df = pd.read_csv(os.path.join(read_dir, file))
             df["Date"] = pd.to_datetime(df["Date"])
             df = df[df["Date"] >= start_date]
+            df = df[df["Date"] < "2025-04-01"]
             df.set_index("Date", inplace=True)
+
             price_list.append(df["Close"])
             asset_names.append(asset_name)
 
@@ -501,6 +569,7 @@ def backtest_spy(
         entries=entry_signals,
         exits=exit_signals,
         init_cash=10_000,
+        cash_sharing=False,
         fees=0.00001,
         freq="1D",
     )
@@ -540,8 +609,8 @@ def backtest_spy(
 
 
 if __name__ == "__main__":
-    backtest_multi_asset_p(run_conf, "backtest_data/expanding_per_asset_daily")
-    backtest_multi_asset_p(run_conf, "backtest_data/rolling_daily_per_asset")
+    backtest_multi_asset(run_conf, "backtest_data/rolling_month")
+    # backtest_multi_asset_p(run_conf, "backtest_data/rolling_daily_per_asset")
     # backtest_equal_weight_monthly_rebalanced(run_conf, "backtest_data/classic")
     # backtest_equal_weight_buy_and_hold(run_conf, "backtest_data/classic")
     # backtest_spy(run_conf, "backtest_data/spy")

@@ -42,3 +42,11 @@ lightning_logs/
 shap_outputs/
 plots/
 ta_lib-0.6.3-cp310-cp310-win_amd64.whl
+bar_plot_backtest_accuracy_f1_extended.pdf
+bar_plot_classic_accuracyf1.pdf
+bar_plot_daily_training.pdf
+bar_plot_training_accuracy_f1_dailies_fixed.pdf
+bar_plot_training_accuracy_f1_dailies.pdf
+NeuralNet.zip
+plot_trades.ipynb
+Research_Project.pdf

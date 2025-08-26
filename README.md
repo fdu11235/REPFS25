@@ -72,6 +72,14 @@ Once docker container is running use following commands:
 conda activate trading-env
 ```
 
+**Running Experiments:**
+
+```bash
+python src/run_experiment.py
+```
+
+Individual steps from the experiments can also be run from the following commands:
+
 **Preprocess data:**
 
 ```bash
