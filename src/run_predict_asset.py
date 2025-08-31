@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 from model.CustomDataset import CustomDataset
 import libs.compute_indicators_labels_lib as compute_indicators_labels_lib
 from sklearn.decomposition import PCA
-import random
+import mlflow.pytorch
 
 
 def predict_asset(
@@ -85,9 +85,11 @@ def predict_asset(
     expected_input_size = data.shape[1] - 1
     print(f"Expected input size: {expected_input_size}")
     train_loader = DataLoader(CustomDataset(data, device=device), batch_size=16)
-    model = NNModel(data.shape[1] - 1, 3).to(device)
+    # model = NNModel(data.shape[1] - 1, 3).to(device)
+    model = mlflow.pytorch.load_model("models:/FinancialNNModel/Production")
+    model = model.to(device)
     model.eval()
-    model.load_state_dict(torch.load(mdl_name))
+    # model.load_state_dict(torch.load(mdl_name))
     labels = model.predict(train_loader)
 
     data["label"] = labels

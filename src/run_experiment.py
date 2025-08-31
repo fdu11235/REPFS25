@@ -18,6 +18,7 @@ def train_main_model():
         get_data_fn=compute_indicators_labels_lib.get_dataset,
         save_to="torch_model/model_final.pt",
         report_save_to="training_report/classic.csv",
+        experiment_name="classic_backtest",
     )
     trainer.run()
 
@@ -356,10 +357,10 @@ def backtesto():
 
 if __name__ == "__main__":
     # You can switch between runs here
-    # classic_backtest()
+    classic_backtest()
     # classic_backtest_per_asset()
     # expanding_window_backtest()
     # expanding_window_backtest_per_asset()
-    rolling_window_backtest()
+    # rolling_window_backtest()
     # rolling_window_backtest_per_asset()
     # backtesto()

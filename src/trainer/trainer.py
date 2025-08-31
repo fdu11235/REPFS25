@@ -20,6 +20,13 @@ from config.config import RUN as run_conf
 from libs.imbalanced_lib import get_sampler
 from sklearn.decomposition import PCA
 
+import mlflow
+import mlflow.pytorch
+from mlflow.tracking import MlflowClient
+
+# Point MLflow to local server
+mlflow.set_tracking_uri("http://localhost:5000")
+
 
 class Trainer:
     def __init__(
@@ -29,6 +36,7 @@ class Trainer:
         filename=None,
         save_to="torch_model/model_final.pt",
         report_save_to="training_reports/expanding_model_reports.csv",
+        experiment_name=None,
     ):
         self.RUN = RUN
         self.get_data_fn = get_data_fn
@@ -36,15 +44,13 @@ class Trainer:
         self.report_save_to = report_save_to
         self.save_to = save_to
         self.seed = RUN["seed"]
+        self.experiment_name = experiment_name
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         torch.manual_seed(self.seed)
-        self._init()
-
-    def _init(self):
+        self.scaler = StandardScaler()
+        self.sampler = get_sampler(self.RUN["balance_algo"])
         if torch.cuda.is_available():
             print("GPU is available!")
-        self.scaler = StandardScaler()
-        self.sampler = get_sampler(run_conf["balance_algo"])
 
     def load_data(self):
         data = (
@@ -177,7 +183,7 @@ class Trainer:
 
         return report
 
-    def run(self):
+    def run_old(self):
         data = self.load_data()
         train, val, test = self.split_data(data)
         input_dim = train.shape[1] - 1
@@ -200,3 +206,93 @@ class Trainer:
 
         self.evaluate(model, test_loader, test["label"], name="Test")
         self.evaluate(model, train_loader, train["label"], name="Train")
+
+    def run(self):
+        # === Start MLflow experiment ===
+        mlflow.set_experiment(self.experiment_name)
+        with mlflow.start_run(run_name="training_run"):
+
+            # --- Log hyperparameters/config ---
+            mlflow.log_params(
+                {
+                    "seed": self.seed,
+                    "epochs": self.RUN["epochs"],
+                    "batch_size": self.RUN.get("batch_size", 256),
+                    "pca_components": self.RUN.get("pca_components", None),
+                    "balance_algo": self.RUN.get("balance_algo", None),
+                    "beta": self.RUN["beta"],
+                }
+            )
+
+            # === Load & split data ===
+            data = self.load_data()
+            train, val, test = self.split_data(data)
+            input_dim = train.shape[1] - 1
+
+            # === Prepare model ===
+            model, criterion, optimizer = self.prepare_model(input_dim, train["label"])
+            train_loader, val_loader, test_loader = self.create_loaders(
+                train, val, test
+            )
+
+            model.print_num_parameters()
+
+            # === Training loop with MLflow logging ===
+            model.train_model(
+                train_loader,
+                val_loader,
+                criterion,
+                optimizer,
+                int(self.RUN["epochs"]),
+                "torch_model",
+            )
+
+            # Save model locally
+            os.makedirs(os.path.dirname(self.save_to), exist_ok=True)
+            model.save(self.save_to)
+
+            # Log the model and register under a fixed name
+            result = mlflow.pytorch.log_model(
+                pytorch_model=model,
+                artifact_path="pytorch-model",
+                registered_model_name="FinancialNNModel",
+            )
+
+            # Promote this version to "Production"
+            client = MlflowClient()
+            latest = client.get_latest_versions("FinancialNNModel", stages=["None"])
+            model_version = latest[0].version  # take most recent unassigned version
+            client.transition_model_version_stage(
+                name="FinancialNNModel",
+                version=model_version,
+                stage="Production",
+                archive_existing_versions=True,
+            )
+
+            """
+            # Assign alias "champion" to this version
+            client.set_registered_model_alias(
+                name="FinancialNNModel",
+                alias="champion",
+                version=model_version
+            )
+            """
+
+            # === Evaluation phase ===
+            test_report = self.evaluate(model, test_loader, test["label"], name="Test")
+            train_report = self.evaluate(
+                model, train_loader, train["label"], name="Train"
+            )
+
+            # --- Log metrics ---
+            mlflow.log_metrics(
+                {
+                    "test_f1": test_report["weighted avg"]["f1-score"],
+                    "test_precision": test_report["weighted avg"]["precision"],
+                    "test_recall": test_report["weighted avg"]["recall"],
+                    "train_f1": train_report["weighted avg"]["f1-score"],
+                }
+            )
+
+            # --- Log artifacts (CSV report file) ---
+            mlflow.log_artifact(self.report_save_to, artifact_path="reports")

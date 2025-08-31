@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from sklearn.dummy import DummyClassifier
 from tqdm import tqdm
 import os
+import mlflow
 
 
 class NNModel(nn.Module):
@@ -69,6 +70,8 @@ class NNModel(nn.Module):
                     f"Epoch {epoch+1}/{epochs}, Loss: {running_loss / (i+1):.4f}, Acc: {accuracy:.2f}%"
                 )
 
+            avg_train_loss = running_loss / len(train_loader)
+
             # Validation Phase
             self.eval()
             val_loss = 0.0
@@ -86,21 +89,19 @@ class NNModel(nn.Module):
             avg_val_loss = val_loss / len(val_loader)
 
             print(
-                f"Epoch {epoch+1}/{epochs}, Train Loss: {running_loss / len(train_loader):.4f}, "
+                f"Epoch {epoch+1}/{epochs}, Train Loss: {avg_train_loss:.4f}, "
                 f"Val Loss: {avg_val_loss:.4f}, Val Acc: {val_acc:.2f}%"
             )
+
+            # === MLflow logging per epoch ===
+            mlflow.log_metric("train_loss", avg_train_loss, step=epoch)
+            mlflow.log_metric("val_loss", avg_val_loss, step=epoch)
+            mlflow.log_metric("val_acc", val_acc, step=epoch)
+
             scheduler.step(avg_val_loss)
             for param_group in optimizer.param_groups:
                 print(f"Current learning rate: {param_group['lr']}")
-            """
-            # Save checkpoint
-            if checkpoint_dir is not None:
-                checkpoint_path = os.path.join(checkpoint_dir, f"epoch_{epoch+1}.pt")
-                torch.save(
-                    self.state_dict(),
-                    checkpoint_path,
-                )
-            """
+
             # Save checkpoint if validation improves
             if avg_val_loss < best_val_loss:
                 best_val_loss = avg_val_loss
